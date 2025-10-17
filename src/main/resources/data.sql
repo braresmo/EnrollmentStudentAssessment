@@ -1,3 +1,4 @@
+--course
 INSERT INTO course (id_tenant, code, title, status, published_at) VALUES (1, 'CS101', 'Introduction to Computer Science', 'ACTIVE_01', CURRENT_TIMESTAMP());
 INSERT INTO course (id_tenant, code, title, status, published_at) VALUES (1, 'ENG202', 'Advanced English Literature', 'ACTIVE_02', CURRENT_TIMESTAMP());
 INSERT INTO course (id_tenant, code, title, status, published_at) VALUES (2, 'MKT301', 'Digital Marketing Strategies', 'ACTIVE_03', CURRENT_TIMESTAMP());
