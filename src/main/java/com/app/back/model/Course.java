@@ -1,12 +1,18 @@
 package com.app.back.model;
 
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.HashSet;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
@@ -44,7 +50,19 @@ public class Course {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date publishedAt;
 	
+	@OneToMany(
+	        mappedBy = "course",
+	        cascade = CascadeType.ALL,
+	        orphanRemoval = true
+	    )
+	private List<Module> modules = new ArrayList<>();
 	
+	@OneToMany(
+		    mappedBy = "course",
+		    cascade = CascadeType.ALL,
+		    orphanRemoval = true
+		)
+	private Set<Enrollment> enrollments = new HashSet<>();
 	/*@PrePersist
 	private void generarEstadoyFechaCreacion() {
 		this.setEstado(1);
@@ -108,5 +126,21 @@ public class Course {
 	public void setPublishedAt(Date publishedAt) {
 		this.publishedAt = publishedAt;
 	}
+	
+    public List<Module> getModules() {
+        return modules;
+    }
+
+    public void setModules(List<Module> modules) {
+        this.modules = modules;
+    }
+    
+    public Set<Enrollment> getEnrollments() {
+        return enrollments;
+    }
+
+    public void setEnrollments(Set<Enrollment> enrollments) {
+        this.enrollments = enrollments;
+    }
 
 }
