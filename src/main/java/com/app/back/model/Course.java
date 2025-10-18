@@ -43,7 +43,7 @@ public class Course {
 	@NotNull
 	private String title;
 	
-	@Column(name = "status", unique = true,nullable = false)
+	@Column(name = "status", nullable = false)
 	@NotNull
 	private String status;
 	

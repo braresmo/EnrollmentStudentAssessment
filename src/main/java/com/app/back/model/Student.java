@@ -3,9 +3,6 @@ package com.app.back.model;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
@@ -21,11 +18,6 @@ import java.util.Set;
 @Table(name = "student")
 @PrimaryKeyJoinColumn(name = "user_id") // Links to the User table
 public class Student extends User {
-	
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "student_id")
-    private Integer studentId;
 
     @Column(name = "student_number", unique = true, nullable = false)
     @NotNull
@@ -43,14 +35,6 @@ public class Student extends User {
     private Set<Enrollment> enrollments = new HashSet<>();
 
     // Getters and Setters
-	public Integer getStudentId() {
-		return studentId;
-	}
-
-	public void setStudentId(Integer studentId) {
-		this.studentId = studentId;
-	}
-
     public String getStudentNumber() {
         return studentNumber;
     }

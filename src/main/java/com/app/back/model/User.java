@@ -21,7 +21,7 @@ import java.util.Set;
  * It uses a JOINED inheritance strategy, so common data is stored in the 'users' table.
  */
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User {
 
