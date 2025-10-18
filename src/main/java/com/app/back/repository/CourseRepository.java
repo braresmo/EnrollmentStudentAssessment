@@ -8,6 +8,6 @@ import com.app.back.model.Course;
 
 public interface CourseRepository extends JpaRepository<Course, Integer> {
 	
-	public Optional<Course> findByCode(String codigo);
+	public Optional<Course> findByCode(String code);
 
 }
