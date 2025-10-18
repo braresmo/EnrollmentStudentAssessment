@@ -43,11 +43,11 @@ public class Instructor extends User {
     private Set<Course> courses = new HashSet<>();
 
     // Getters and Setters
-    public Integer getInstructor() {
+    public Integer getInstructorId() {
         return instructorId;
     }
 
-    public void setCourses(Integer instructorId) {
+    public void setInstructorId(Integer instructorId) {
         this.instructorId = instructorId;
     }
     

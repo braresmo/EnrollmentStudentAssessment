@@ -33,14 +33,14 @@ public class Enrollment {
     @Column(name = "enrolled_at", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date enrolledAt;
-/*
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-*/
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private Student student;
 
 
     // --- Getters and Setters ---
@@ -68,21 +68,21 @@ public class Enrollment {
     public void setEnrolledAt(Date enrolledAt) {
         this.enrolledAt = enrolledAt;
     }
-/*
-    public User getUser() {
-        return user;
-    }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-*/
     public Course getCourse() {
         return course;
     }
 
     public void setCourse(Course course) {
         this.course = course;
+    }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
     }
 }
 

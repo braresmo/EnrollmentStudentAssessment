@@ -9,11 +9,13 @@ import java.util.HashSet;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -31,7 +33,7 @@ public class Course {
 	private Integer idCourse;
 	
 	@Column(name = "id_tenant")
-	private Integer idTenat;
+	private Integer idTenant;
 	
 	@Column(name = "code",nullable = false)
 	@NotNull
@@ -49,6 +51,10 @@ public class Course {
 	@NotNull
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date publishedAt;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "instructor_id", nullable = false)
+	private Instructor instructor;
 	
 	@OneToMany(
 	        mappedBy = "course",
@@ -83,13 +89,13 @@ public class Course {
 		this.idCourse = idCourse;
 	}
 
-	public Integer getIdTenat() {
-		return idTenat;
+	public Integer getIdTenant() {
+		return idTenant;
 	}
 
 
-	public void setidTenat(Integer idTenat) {
-		this.idTenat = idTenat;
+	public void setIdTenant(Integer idTenant) {
+		this.idTenant = idTenant;
 	}
 
 
@@ -125,6 +131,14 @@ public class Course {
 
 	public void setPublishedAt(Date publishedAt) {
 		this.publishedAt = publishedAt;
+	}
+	
+	public Instructor getInstructor() {
+		return instructor;
+	}
+
+	public void setInstructor(Instructor instructor) {
+		this.instructor = instructor;
 	}
 	
     public List<Module> getModules() {
