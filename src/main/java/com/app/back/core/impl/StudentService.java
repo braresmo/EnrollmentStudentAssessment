@@ -23,18 +23,18 @@ public class StudentService implements IStudent {
 
         // Case 1: Create a new student
         // The student ID is null and no student exists with this number or email.
-        if (student.getStudentId() == null && studentByNumber.isEmpty() && studentByEmail.isEmpty()) {
+        if (student.getUserId() == null && studentByNumber.isEmpty() && studentByEmail.isEmpty()) {
             return studentRepository.save(student);
         }
 
         // Case 2: Update an existing student
-        if (student.getStudentId() != null) {
+        if (student.getUserId() != null) {
             // Check if student number belongs to this student or doesn't exist
             boolean numberOk = studentByNumber.isEmpty() || 
-                              studentByNumber.get().getStudentId().equals(student.getStudentId());
+                              studentByNumber.get().getUserId().equals(student.getUserId());
             // Check if email belongs to this student or doesn't exist
             boolean emailOk = studentByEmail.isEmpty() || 
-                             studentByEmail.get().getStudentId().equals(student.getStudentId());
+                             studentByEmail.get().getUserId().equals(student.getUserId());
             
             if (numberOk && emailOk) {
                 return studentRepository.save(student);

@@ -83,8 +83,8 @@ public class EnrollmentController {
     }
 
     @CrossOrigin(origins = "*")
-    @GetMapping(path = "/findByStudentId/{studentId}")
-    public ResponseEntity<List<Enrollment>> findByStudentId(@PathVariable Integer studentId) {
+    @GetMapping(path = "/findByStudentId/{userId}")
+    public ResponseEntity<List<Enrollment>> findByStudentId(@PathVariable Integer userId) {
         try {
             // Note: This would need the student service to get the student object
             // For now, we'll return a placeholder response

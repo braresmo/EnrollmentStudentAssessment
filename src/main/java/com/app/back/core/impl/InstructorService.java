@@ -23,18 +23,18 @@ public class InstructorService implements IInstructor {
 
         // Case 1: Create a new instructor
         // The instructor ID is null and no instructor exists with this employee number or email.
-        if (instructor.getInstructorId() == null && instructorByEmployeeNumber.isEmpty() && instructorByEmail.isEmpty()) {
+        if (instructor.getUserId() == null && instructorByEmployeeNumber.isEmpty() && instructorByEmail.isEmpty()) {
             return instructorRepository.save(instructor);
         }
 
         // Case 2: Update an existing instructor
-        if (instructor.getInstructorId() != null) {
+        if (instructor.getUserId() != null) {
             // Check if employee number belongs to this instructor or doesn't exist
             boolean employeeNumberOk = instructorByEmployeeNumber.isEmpty() || 
-                                      instructorByEmployeeNumber.get().getInstructorId().equals(instructor.getInstructorId());
+                                      instructorByEmployeeNumber.get().getUserId().equals(instructor.getUserId());
             // Check if email belongs to this instructor or doesn't exist
             boolean emailOk = instructorByEmail.isEmpty() || 
-                             instructorByEmail.get().getInstructorId().equals(instructor.getInstructorId());
+                             instructorByEmail.get().getUserId().equals(instructor.getUserId());
             
             if (employeeNumberOk && emailOk) {
                 return instructorRepository.save(instructor);

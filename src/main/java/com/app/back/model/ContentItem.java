@@ -30,6 +30,10 @@ public class ContentItem {
     private String type;
 
     @NotNull
+    @Column(name = "title", nullable = false)
+    private String title;
+
+    @NotNull
     @Column(name = "uri", nullable = false)
     private String uri;
 
@@ -73,6 +77,14 @@ public class ContentItem {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getUri() {
