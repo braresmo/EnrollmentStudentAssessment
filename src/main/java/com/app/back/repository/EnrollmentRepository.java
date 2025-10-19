@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.app.back.model.Enrollment;
@@ -20,5 +21,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 	List<Enrollment> findByStatus(String status);
 	
 	Optional<Enrollment> findByStudentAndCourse(Student student, Course course);
+	
+	@Query("SELECT e FROM Enrollment e JOIN FETCH e.student JOIN FETCH e.course")
+	List<Enrollment> findAllWithStudentAndCourse();
 
 }

@@ -3,6 +3,10 @@ package com.app.back.model;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -18,6 +22,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "content_item")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ContentItem {
 
     @Id
@@ -44,6 +49,7 @@ public class ContentItem {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "module_id", nullable = false)
+    @JsonIgnoreProperties({"contentItems", "course", "hibernateLazyInitializer", "handler"})
     private Module module;
     
 

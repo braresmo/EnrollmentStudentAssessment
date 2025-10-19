@@ -47,7 +47,7 @@ public class EnrollmentService implements IEnrollment {
 
     @Override
     public List<Enrollment> findAll() {
-        return enrollmentRepository.findAll();
+        return enrollmentRepository.findAllWithStudentAndCourse();
     }
 
     @Override

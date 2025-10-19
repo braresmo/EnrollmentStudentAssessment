@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module & Content Management - EduTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .form-container, .table-container { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg mb-6">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-indigo-600">
+                    📖 Module & Content Management
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <a href="courses.html" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
+                    <a href="students.html" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
+                    <a href="instructors.html" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a href="enrollments.html" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <!-- Course Selection -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">Select Course</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="course-select" class="block text-sm font-medium text-gray-700">Course</label>
+                    <select id="course-select" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="">Select a Course</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button id="load-modules-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                        Load Modules
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Modules Section -->
+            <div class="space-y-6">
+                <!-- Module Form -->
+                <div id="module-form-container" class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 id="module-form-title" class="text-xl font-semibold mb-4 text-gray-700">Add New Module</h3>
+                    <form id="module-form" class="space-y-4">
+                        <input type="hidden" id="module-id">
+                        <input type="hidden" id="module-course-id">
+                        
+                        <div>
+                            <label for="module-title" class="block text-sm font-medium text-gray-700">Module Title</label>
+                            <input type="text" id="module-title" placeholder="e.g., Introduction to Programming" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <div>
+                            <label for="module-sequence" class="block text-sm font-medium text-gray-700">Sequence</label>
+                            <input type="number" id="module-sequence" placeholder="e.g., 1" required min="1" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button type="submit" id="module-submit-btn" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition duration-200">
+                                Add Module
+                            </button>
+                            <button type="button" id="module-cancel-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-200" style="display: none;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Modules List -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Course Modules</h3>
+                    <div id="modules-list" class="space-y-3">
+                        <p class="text-gray-500">Select a course to view modules</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Items Section -->
+            <div class="space-y-6">
+                <!-- Content Item Form -->
+                <div id="content-form-container" class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 id="content-form-title" class="text-xl font-semibold mb-4 text-gray-700">Add Content Item</h3>
+                    <form id="content-form" class="space-y-4">
+                        <input type="hidden" id="content-id">
+                        <input type="hidden" id="content-module-id">
+                        
+                        <div>
+                            <label for="content-type" class="block text-sm font-medium text-gray-700">Content Type</label>
+                            <select id="content-type" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">Select Type</option>
+                                <option value="VIDEO">Video</option>
+                                <option value="DOCUMENT">Document</option>
+                                <option value="QUIZ">Quiz</option>
+                                <option value="EXERCISE">Exercise</option>
+                                <option value="ASSIGNMENT">Assignment</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="content-title" class="block text-sm font-medium text-gray-700">Title</label>
+                            <input type="text" id="content-title" placeholder="e.g., Introduction Video" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <div>
+                            <label for="content-uri" class="block text-sm font-medium text-gray-700">URI/URL</label>
+                            <input type="url" id="content-uri" placeholder="https://example.com/content" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+
+                        <div>
+                            <label for="content-duration" class="block text-sm font-medium text-gray-700">Duration (seconds)</label>
+                            <input type="number" id="content-duration" placeholder="e.g., 300" min="0" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Optional: Leave blank for documents/quizzes</p>
+                        </div>
+
+                        <div>
+                            <label for="content-module-select" class="block text-sm font-medium text-gray-700">Module</label>
+                            <select id="content-module-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="">Select Module</option>
+                            </select>
+                        </div>
+
+                        <div class="flex space-x-3">
+                            <button type="submit" id="content-submit-btn" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition duration-200">
+                                Add Content
+                            </button>
+                            <button type="button" id="content-cancel-btn" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-200" style="display: none;">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Content Items List -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">Content Items</h3>
+                    
+                    <!-- Module Selector for Content Items -->
+                    <div class="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <label for="view-content-module-select" class="block text-sm font-medium text-gray-700 mb-2">Select Module to View Content Items</label>
+                        <select id="view-content-module-select" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">Select a module to view its content items</option>
+                        </select>
+                    </div>
+                    
+                    <div id="content-list" class="space-y-3">
+                        <p class="text-gray-500">Select a module to view content items</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let courses = [];
+        let modules = [];
+        let contentItems = [];
+        let selectedCourseId = null;
+        let selectedModuleId = null;
+
+        // Load courses for dropdown
+        async function loadCourses() {
+            console.log('Loading courses...');
+            try {
+                const response = await fetch(`${API_BASE}/course/getAll`);
+                console.log('Courses response status:', response.status);
+                if (response.ok) {
+                    courses = await response.json();
+                    console.log('Courses loaded:', courses.length, 'courses');
+                    const select = document.getElementById('course-select');
+                    select.innerHTML = '<option value="">Select a Course</option>';
+                    courses.forEach(course => {
+                        const option = document.createElement('option');
+                        option.value = course.idCourse;
+                        option.textContent = `${course.code} - ${course.title}`;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('Failed to load courses, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        // Load modules for selected course
+        async function loadModules(courseId) {
+            console.log('Loading modules for course:', courseId);
+            try {
+                // Reset module selection when loading new course modules
+                selectedModuleId = null;
+                contentItems = [];
+                
+                const response = await fetch(`${API_BASE}/module/findByCourseId/${courseId}`);
+                console.log('Modules response status:', response.status);
+                if (response.ok) {
+                    modules = await response.json();
+                    console.log('Modules loaded:', modules.length, 'modules');
+                    displayModules();
+                    populateModuleDropdown();
+                    // Reset content area to show instruction message
+                    document.getElementById('content-list').innerHTML = '<p class="text-gray-500">Select a module to view content items</p>';
+                } else {
+                    console.error('Failed to load modules, status:', response.status);
+                    modules = [];
+                    displayModules();
+                    populateModuleDropdown();
+                    document.getElementById('content-list').innerHTML = '<p class="text-gray-500">No modules found for this course</p>';
+                }
+            } catch (error) {
+                console.error('Error loading modules:', error);
+                modules = [];
+                displayModules();
+                document.getElementById('content-list').innerHTML = '<p class="text-gray-500">Error loading modules</p>';
+            }
+        }
+
+        // Display modules
+        function displayModules() {
+            console.log('Displaying modules:', modules.length, 'modules');
+            const container = document.getElementById('modules-list');
+            
+            if (modules.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No modules found for this course</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            modules.sort((a, b) => a.sequence - b.sequence);
+            
+            modules.forEach(module => {
+                const moduleCard = document.createElement('div');
+                moduleCard.className = `border rounded-lg p-4 hover:bg-gray-50 cursor-pointer ${selectedModuleId === module.moduleId ? 'border-indigo-500 bg-indigo-50' : 'border-gray-200'}`;
+                moduleCard.onclick = () => selectModule(module.moduleId);
+                
+                moduleCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-medium text-gray-900">${module.sequence}. ${module.title}</h4>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="event.stopPropagation(); editModule(${module.moduleId})" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</button>
+                            <button onclick="event.stopPropagation(); deleteModule(${module.moduleId})" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(moduleCard);
+            });
+        }
+
+        // Populate module dropdown for content form
+        function populateModuleDropdown() {
+            // Populate the content form dropdown
+            const select = document.getElementById('content-module-select');
+            select.innerHTML = '<option value="">Select Module</option>';
+            modules.forEach(module => {
+                const option = document.createElement('option');
+                option.value = module.moduleId;
+                option.textContent = `${module.sequence}. ${module.title}`;
+                select.appendChild(option);
+            });
+            
+            // Populate the content viewing dropdown
+            const viewSelect = document.getElementById('view-content-module-select');
+            viewSelect.innerHTML = '<option value="">Select a module to view its content items</option>';
+            modules.forEach(module => {
+                const option = document.createElement('option');
+                option.value = module.moduleId;
+                option.textContent = `${module.sequence}. ${module.title}`;
+                viewSelect.appendChild(option);
+            });
+        }
+
+        // Select module and load its content
+        function selectModule(moduleId) {
+            console.log('Selecting module:', moduleId);
+            selectedModuleId = moduleId;
+            displayModules(); // Refresh to show selection
+            loadContentItems(moduleId);
+            document.getElementById('content-module-select').value = moduleId;
+            document.getElementById('view-content-module-select').value = moduleId;
+        }
+
+        // Load content items for selected module
+        async function loadContentItems(moduleId) {
+            console.log('Loading content items for module:', moduleId);
+            try {
+                const response = await fetch(`${API_BASE}/contentitem/findByModuleId/${moduleId}`);
+                console.log('Content items response status:', response.status);
+                if (response.ok) {
+                    contentItems = await response.json();
+                    console.log('Content items loaded:', contentItems);
+                    displayContentItems();
+                } else {
+                    console.log('Failed to load content items, status:', response.status);
+                    contentItems = [];
+                    displayContentItems();
+                }
+            } catch (error) {
+                console.error('Error loading content items:', error);
+                contentItems = [];
+                displayContentItems();
+            }
+        }
+
+        // Display content items
+        function displayContentItems() {
+            console.log('Displaying content items:', contentItems.length, 'items');
+            const container = document.getElementById('content-list');
+            
+            if (contentItems.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">No content items found for this module</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            
+            contentItems.forEach(content => {
+                const contentCard = document.createElement('div');
+                contentCard.className = 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50';
+                
+                const duration = content.durationSec ? `${Math.floor(content.durationSec / 60)}:${(content.durationSec % 60).toString().padStart(2, '0')}` : 'N/A';
+                const typeColor = getContentTypeColor(content.type);
+                
+                contentCard.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <span class="px-2 py-1 text-xs rounded-full ${typeColor}">${content.type}</span>
+                                <span class="text-xs text-gray-500">Duration: ${duration}</span>
+                            </div>
+                            <h5 class="font-medium text-gray-900 mb-1">${content.title}</h5>
+                            <a href="${content.uri}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 break-all">${content.uri}</a>
+                        </div>
+                        <div class="flex space-x-2 ml-4">
+                            <button onclick="editContent(${content.contentId})" class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</button>
+                            <button onclick="deleteContent(${content.contentId})" class="text-red-600 hover:text-red-900 text-sm">Delete</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(contentCard);
+            });
+        }
+
+        // Get content type color
+        function getContentTypeColor(type) {
+            switch (type) {
+                case 'VIDEO': return 'bg-red-100 text-red-800';
+                case 'DOCUMENT': return 'bg-blue-100 text-blue-800';
+                case 'QUIZ': return 'bg-green-100 text-green-800';
+                case 'EXERCISE': return 'bg-yellow-100 text-yellow-800';
+                case 'ASSIGNMENT': return 'bg-purple-100 text-purple-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('load-modules-btn').addEventListener('click', () => {
+            const courseId = document.getElementById('course-select').value;
+            if (courseId) {
+                selectedCourseId = courseId;
+                document.getElementById('module-course-id').value = courseId;
+                loadModules(courseId);
+            } else {
+                alert('Please select a course first');
+            }
+        });
+
+        // Module form submission
+        document.getElementById('module-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!selectedCourseId) {
+                alert('Please select a course first');
+                return;
+            }
+
+            const moduleData = {
+                title: document.getElementById('module-title').value,
+                sequence: parseInt(document.getElementById('module-sequence').value)
+            };
+
+            const moduleId = document.getElementById('module-id').value;
+            
+            try {
+                let response;
+                if (moduleId) {
+                    // Update existing module using courseId in path
+                    moduleData.moduleId = parseInt(moduleId);
+                    response = await fetch(`${API_BASE}/module/updateWithCourseId/${selectedCourseId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(moduleData)
+                    });
+                } else {
+                    // Create new module - keep course in JSON for creation
+                    moduleData.course = { idCourse: selectedCourseId };
+                    response = await fetch(`${API_BASE}/module/save`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(moduleData)
+                    });
+                }
+
+                if (response.ok) {
+                    resetModuleForm();
+                    loadModules(selectedCourseId);
+                    alert(moduleId ? 'Module updated successfully!' : 'Module added successfully!');
+                } else {
+                    alert('Error saving module. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving module:', error);
+                alert('Error saving module. Please try again.');
+            }
+        });
+
+        // Content form submission
+        document.getElementById('content-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const moduleId = document.getElementById('content-module-select').value;
+            if (!moduleId) {
+                alert('Please select a module first');
+                return;
+            }
+
+            const contentData = {
+                type: document.getElementById('content-type').value,
+                title: document.getElementById('content-title').value,
+                uri: document.getElementById('content-uri').value,
+                durationSec: document.getElementById('content-duration').value ? parseInt(document.getElementById('content-duration').value) : null
+            };
+
+            console.log('Sending content data:', contentData);
+            console.log('Module ID:', moduleId);
+            
+            const contentId = document.getElementById('content-id').value;
+            
+            try {
+                let response;
+                if (contentId) {
+                    // Update content item - keep module in JSON for updates
+                    contentData.contentId = parseInt(contentId);
+                    contentData.module = { moduleId: parseInt(moduleId) };
+                    response = await fetch(`${API_BASE}/contentitem/update`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(contentData)
+                    });
+                } else {
+                    // Add new content item using the new endpoint that takes moduleId as path parameter
+                    response = await fetch(`${API_BASE}/contentitem/saveWithModuleId/${moduleId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(contentData)
+                    });
+                }
+
+                if (response.ok) {
+                    resetContentForm();
+                    if (selectedModuleId) {
+                        loadContentItems(selectedModuleId);
+                    }
+                    alert(contentId ? 'Content updated successfully!' : 'Content added successfully!');
+                } else {
+                    alert('Error saving content. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving content:', error);
+                alert('Error saving content. Please try again.');
+            }
+        });
+
+        // Edit functions
+        function editModule(moduleId) {
+            const module = modules.find(m => m.moduleId === moduleId);
+            if (module) {
+                document.getElementById('module-id').value = module.moduleId;
+                document.getElementById('module-title').value = module.title;
+                document.getElementById('module-sequence').value = module.sequence;
+                
+                document.getElementById('module-form-title').textContent = 'Edit Module';
+                document.getElementById('module-submit-btn').textContent = 'Update Module';
+                document.getElementById('module-cancel-btn').style.display = 'inline-block';
+            }
+        }
+
+        function editContent(contentId) {
+            const content = contentItems.find(c => c.contentId === contentId);
+            if (content) {
+                document.getElementById('content-id').value = content.contentId;
+                document.getElementById('content-type').value = content.type;
+                document.getElementById('content-title').value = content.title;
+                document.getElementById('content-uri').value = content.uri;
+                document.getElementById('content-duration').value = content.durationSec || '';
+                document.getElementById('content-module-select').value = content.module.moduleId;
+                
+                document.getElementById('content-form-title').textContent = 'Edit Content Item';
+                document.getElementById('content-submit-btn').textContent = 'Update Content';
+                document.getElementById('content-cancel-btn').style.display = 'inline-block';
+            }
+        }
+
+        // Delete functions
+        async function deleteModule(moduleId) {
+            if (confirm('Are you sure you want to delete this module? This will also delete all content items in this module.')) {
+                try {
+                    const response = await fetch(`${API_BASE}/module/delete/${moduleId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadModules(selectedCourseId);
+                        if (selectedModuleId === moduleId) {
+                            selectedModuleId = null;
+                            document.getElementById('content-list').innerHTML = '<p class="text-gray-500">Select a module to view content items</p>';
+                        }
+                        alert('Module deleted successfully!');
+                    } else {
+                        alert('Error deleting module. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting module:', error);
+                    alert('Error deleting module. Please try again.');
+                }
+            }
+        }
+
+        async function deleteContent(contentId) {
+            if (confirm('Are you sure you want to delete this content item?')) {
+                try {
+                    const response = await fetch(`${API_BASE}/contentitem/delete/${contentId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        if (selectedModuleId) {
+                            loadContentItems(selectedModuleId);
+                        }
+                        alert('Content deleted successfully!');
+                    } else {
+                        alert('Error deleting content. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting content:', error);
+                    alert('Error deleting content. Please try again.');
+                }
+            }
+        }
+
+        // Reset forms
+        function resetModuleForm() {
+            document.getElementById('module-form').reset();
+            document.getElementById('module-id').value = '';
+            document.getElementById('module-form-title').textContent = 'Add New Module';
+            document.getElementById('module-submit-btn').textContent = 'Add Module';
+            document.getElementById('module-cancel-btn').style.display = 'none';
+        }
+
+        function resetContentForm() {
+            document.getElementById('content-form').reset();
+            document.getElementById('content-id').value = '';
+            document.getElementById('content-form-title').textContent = 'Add Content Item';
+            document.getElementById('content-submit-btn').textContent = 'Add Content';
+            document.getElementById('content-cancel-btn').style.display = 'none';
+        }
+
+        // Cancel buttons
+        document.getElementById('module-cancel-btn').addEventListener('click', resetModuleForm);
+        document.getElementById('content-cancel-btn').addEventListener('click', resetContentForm);
+
+        // Content viewing module selector
+        document.getElementById('view-content-module-select').addEventListener('change', (e) => {
+            const moduleId = e.target.value;
+            if (moduleId) {
+                selectModule(parseInt(moduleId));
+            } else {
+                selectedModuleId = null;
+                displayModules();
+                document.getElementById('content-list').innerHTML = '<p class="text-gray-500">Select a module to view content items</p>';
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', loadCourses);
+
+        // Check for courseId in URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseIdParam = urlParams.get('courseId');
+        if (courseIdParam) {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(() => {
+                    document.getElementById('course-select').value = courseIdParam;
+                    document.getElementById('load-modules-btn').click();
+                }, 100);
+            });
+        }
+    </script>
+</body>
+</html>

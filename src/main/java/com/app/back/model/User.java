@@ -1,5 +1,8 @@
 package com.app.back.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,6 +47,7 @@ public abstract class User {
 
     @Column(name = "password_hash", nullable = false)
     @NotNull
+    @JsonIgnore
     private String passwordHash;
 
     @Column(name = "is_active", nullable = false)

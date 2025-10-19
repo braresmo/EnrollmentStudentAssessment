@@ -86,11 +86,23 @@ public class ModuleController {
     @GetMapping(path = "/findByCourseId/{courseId}")
     public ResponseEntity<List<Module>> findByCourseId(@PathVariable Integer courseId) {
         try {
-            // Note: This would need the course service to get the course object
-            // For now, we'll return a placeholder response
-            return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+            List<Module> modules = moduleService.findByCourseId(courseId);
+            return ResponseEntity.ok(modules);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @CrossOrigin(origins = "*")
+    @ResponseStatus(HttpStatus.OK)
+    @PutMapping(value = "/updateWithCourseId/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Module> updateWithCourseId(@RequestBody Module module, @PathVariable Integer courseId) {
+        try {
+            return ResponseEntity.ok(moduleService.saveWithCourseId(module, courseId));
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

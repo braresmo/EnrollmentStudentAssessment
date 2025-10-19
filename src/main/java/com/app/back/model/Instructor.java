@@ -1,5 +1,9 @@
 package com.app.back.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,6 +21,7 @@ import java.util.Set;
 @Entity
 @Table(name = "instructor")
 @PrimaryKeyJoinColumn(name = "user_id") // Links to the User table
+@JsonIgnoreProperties({"password", "hibernateLazyInitializer", "handler"})
 public class Instructor extends User {
 
     @Column(name = "employee_number", unique = true, nullable = false)
@@ -32,6 +37,7 @@ public class Instructor extends User {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
+    @JsonIgnore
     private Set<Course> courses = new HashSet<>();
 
     // Getters and Setters

@@ -6,6 +6,10 @@ import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,6 +29,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "course")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Course {
 	
 	@Id
@@ -54,6 +59,7 @@ public class Course {
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "instructor_id", nullable = false)
+	@JsonIgnoreProperties({"courses", "passwordHash", "roles", "hibernateLazyInitializer", "handler"})
 	private Instructor instructor;
 	
 	@OneToMany(
@@ -61,6 +67,7 @@ public class Course {
 	        cascade = CascadeType.ALL,
 	        orphanRemoval = true
 	    )
+	@JsonIgnore
 	private List<Module> modules = new ArrayList<>();
 	
 	@OneToMany(
@@ -68,6 +75,7 @@ public class Course {
 		    cascade = CascadeType.ALL,
 		    orphanRemoval = true
 		)
+	@JsonIgnore
 	private Set<Enrollment> enrollments = new HashSet<>();
 	/*@PrePersist
 	private void generarEstadoyFechaCreacion() {
