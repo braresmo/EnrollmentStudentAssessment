@@ -96,11 +96,21 @@ public class ContentItemController {
     @GetMapping(path = "/findByModuleId/{moduleId}")
     public ResponseEntity<List<ContentItem>> findByModuleId(@PathVariable Integer moduleId) {
         try {
-            // Note: This would need the module service to get the module object
-            // For now, we'll return a placeholder response
-            return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+            List<ContentItem> contentItems = contentItemService.findByModuleId(moduleId);
+            return ResponseEntity.ok(contentItems);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @CrossOrigin(origins = "*")
+    @PostMapping(path = "/saveWithModuleId/{moduleId}")
+    public ResponseEntity<ContentItem> saveWithModuleId(@PathVariable Integer moduleId, @RequestBody ContentItem contentItem) {
+        try {
+            ContentItem savedItem = contentItemService.saveWithModuleId(contentItem, moduleId);
+            return ResponseEntity.ok(savedItem);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
 }

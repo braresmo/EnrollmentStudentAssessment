@@ -3,6 +3,11 @@ package com.app.back.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "module")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Module {
 
     @Id
@@ -36,6 +42,7 @@ public class Module {
     // A Module must belong to a Course (Many-to-One relationship)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_course", nullable = false)
+    @JsonIgnoreProperties({"modules", "enrollments", "hibernateLazyInitializer", "handler"})
     private Course course;
 
     // A Module can contain many ContentItems (One-to-Many relationship)
@@ -44,6 +51,7 @@ public class Module {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
+    @JsonIgnore
     private List<ContentItem> contentItems = new ArrayList<>();
 
 

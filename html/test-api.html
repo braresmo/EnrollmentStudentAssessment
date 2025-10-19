@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connectivity Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing API endpoints...</p>';
+            
+            try {
+                // Test courses endpoint
+                console.log('Testing courses endpoint...');
+                const coursesResponse = await fetch(`${API_BASE}/course/getAll`);
+                console.log('Courses response:', coursesResponse.status);
+                
+                if (coursesResponse.ok) {
+                    const courses = await coursesResponse.json();
+                    console.log('Courses:', courses);
+                    results.innerHTML += `<p>✅ Courses: ${courses.length} found</p>`;
+                    
+                    if (courses.length > 0) {
+                        const firstCourse = courses[0];
+                        console.log('Testing modules for course:', firstCourse.idCourse);
+                        
+                        // Test modules endpoint
+                        const modulesResponse = await fetch(`${API_BASE}/module/findByCourseId/${firstCourse.idCourse}`);
+                        console.log('Modules response:', modulesResponse.status);
+                        
+                        if (modulesResponse.ok) {
+                            const modules = await modulesResponse.json();
+                            console.log('Modules:', modules);
+                            results.innerHTML += `<p>✅ Modules for course ${firstCourse.code}: ${modules.length} found</p>`;
+                            
+                            if (modules.length > 0) {
+                                const firstModule = modules[0];
+                                console.log('Testing content items for module:', firstModule.moduleId);
+                                
+                                // Test content items endpoint
+                                const contentResponse = await fetch(`${API_BASE}/contentitem/findByModuleId/${firstModule.moduleId}`);
+                                console.log('Content items response:', contentResponse.status);
+                                
+                                if (contentResponse.ok) {
+                                    const contentItems = await contentResponse.json();
+                                    console.log('Content items:', contentItems);
+                                    results.innerHTML += `<p>✅ Content items for module ${firstModule.title}: ${contentItems.length} found</p>`;
+                                } else {
+                                    results.innerHTML += `<p>❌ Content items failed: ${contentResponse.status}</p>`;
+                                }
+                            }
+                        } else {
+                            results.innerHTML += `<p>❌ Modules failed: ${modulesResponse.status}</p>`;
+                        }
+                    }
+                } else {
+                    results.innerHTML += `<p>❌ Courses failed: ${coursesResponse.status}</p>`;
+                }
+            } catch (error) {
+                console.error('API test error:', error);
+                results.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', testAPI);
+    </script>
+</body>
+</html>

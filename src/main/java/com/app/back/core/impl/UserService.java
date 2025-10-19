@@ -23,6 +23,9 @@ public class UserService implements IUser {
         // Case 1: Create a new user
         // The user ID is null and no user exists with this email.
         if (user.getUserId() == null && userByEmail.isEmpty()) {
+            if (user.getPasswordHash() == null || user.getPasswordHash().trim().isEmpty()) {
+                throw new Exception("Password is required for new users");
+            }
             return userRepository.save(user);
         }
 
@@ -32,6 +35,11 @@ public class UserService implements IUser {
             // We can only update if the ID of the user being saved matches the ID of the user found by email.
             // This prevents changing a user's email to one that is already taken by another user.
             if (user.getUserId() != null && user.getUserId().equals(userByEmail.get().getUserId())) {
+                // For updates, preserve existing password if no new password provided
+                if (user.getPasswordHash() == null || user.getPasswordHash().trim().isEmpty()) {
+                    User existingUser = userByEmail.get();
+                    user.setPasswordHash(existingUser.getPasswordHash());
+                }
                 return userRepository.save(user);
             }
         }

@@ -1,5 +1,6 @@
 package com.app.back.core.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,5 +62,30 @@ public class CourseService implements ICourse{
 	public Optional<Course> findByCodigo(String code) {
 		
 		return courseRepository.findByCode(code);
+	}
+	
+	// Additional filtering methods
+	public List<Course> findByStatus(String status) {
+		return courseRepository.findByStatus(status);
+	}
+	
+	public List<Course> findByInstructorId(Integer instructorId) {
+		return courseRepository.findByInstructorId(instructorId);
+	}
+	
+	public List<Course> findByCodeContaining(String code) {
+		return courseRepository.findByCodeContainingIgnoreCase(code);
+	}
+	
+	public List<Course> findByTitleContaining(String title) {
+		return courseRepository.findByTitleContainingIgnoreCase(title);
+	}
+	
+	public List<Course> findByPublishedDateRange(Date startDate, Date endDate) {
+		return courseRepository.findByPublishedAtBetween(startDate, endDate);
+	}
+	
+	public List<Course> findCoursesWithFilters(String status, Integer instructorId, String code, String title) {
+		return courseRepository.findCoursesWithFilters(status, instructorId, code, title);
 	}
 }

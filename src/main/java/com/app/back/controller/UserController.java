@@ -71,4 +71,19 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @CrossOrigin(origins = "*")
+    @GetMapping(path = "/findByEmail/{email}")
+    public ResponseEntity<User> findByEmail(@PathVariable String email) {
+        try {
+            Optional<User> user = userService.findByEmail(email);
+            if (user.isPresent()) {
+                return ResponseEntity.ok(user.get());
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
