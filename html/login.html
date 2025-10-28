@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Student Enrollment System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-header h1 {
+            color: #333;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .login-btn {
+            width: 100%;
+            background-color: #007bff;
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .login-btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .navigation-links {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .navigation-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        .navigation-links a:hover {
+            text-decoration: underline;
+        }
+
+        .session-info {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .session-info h3 {
+            margin: 0 0 0.5rem 0;
+            color: #495057;
+        }
+
+        .session-info p {
+            margin: 0.25rem 0;
+            color: #6c757d;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .demo-credentials {
+            background-color: #e9ecef;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .demo-credentials h4 {
+            margin: 0 0 0.5rem 0;
+            color: #495057;
+        }
+
+        .demo-credentials p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Student Enrollment System</h1>
+        </div>
+
+        <div id="sessionInfo" class="session-info">
+            <h3>Active Session</h3>
+            <p><strong>User:</strong> <span id="sessionUser"></span></p>
+            <p><strong>Type:</strong> <span id="sessionType"></span></p>
+            <p><strong>Roles:</strong> <span id="sessionRoles"></span></p>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+
+        <div id="loginForm">
+            <div id="alertMessage" class="alert"></div>
+
+            <form id="loginFormElement">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">Login</button>
+            </form>
+        </div>
+
+        <div class="navigation-links">
+            <a href="course.html">Courses</a>
+            <a href="student.html">Students</a>
+            <a href="instructor.html">Instructors</a>
+        </div>
+
+        <div class="demo-credentials">
+            <h4>Demo Credentials</h4>
+            <p><strong>Admin:</strong> admin / admin123</p>
+            <p><strong>Instructor:</strong> instructor1 / pass123</p>
+            <p><strong>Student:</strong> student1 / pass123</p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080';
+
+        // Check for existing session on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            checkSession();
+        });
+
+        function checkSession() {
+            fetch(`${API_BASE_URL}/auth/session`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    showSessionInfo(data.user);
+                } else {
+                    showLoginForm();
+                }
+            })
+            .catch(error => {
+                console.error('Error checking session:', error);
+                showLoginForm();
+            });
+        }
+
+        function showSessionInfo(user) {
+            document.getElementById('sessionInfo').style.display = 'block';
+            document.getElementById('loginForm').style.display = 'none';
+            
+            document.getElementById('sessionUser').textContent = user.username || `User ${user.userId}`;
+            document.getElementById('sessionType').textContent = user.userType || 'Unknown';
+            document.getElementById('sessionRoles').textContent = user.roles ? user.roles.join(', ') : 'No roles';
+        }
+
+        function showLoginForm() {
+            document.getElementById('sessionInfo').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+        }
+
+        function showAlert(message, isError = false) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+            alertDiv.style.display = 'block';
+            
+            // Hide alert after 5 seconds
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function hideAlert() {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.style.display = 'none';
+        }
+
+        // Handle login form submission
+        document.getElementById('loginFormElement').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Disable button and show loading state
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            hideAlert();
+            
+            const loginData = {
+                username: username,
+                password: password
+            };
+            
+            fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify(loginData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Login successful! Redirecting...', false);
+                    setTimeout(() => {
+                        if (data.user) {
+                            showSessionInfo(data.user);
+                        } else {
+                            checkSession(); // Refresh session info
+                        }
+                    }, 1000);
+                } else {
+                    showAlert(data.message || 'Login failed. Please try again.', true);
+                }
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                showAlert('Network error. Please check your connection and try again.', true);
+            })
+            .finally(() => {
+                // Re-enable button
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            });
+        });
+
+        function logout() {
+            fetch(`${API_BASE_URL}/auth/logout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Logged out successfully', false);
+                    setTimeout(() => {
+                        showLoginForm();
+                        // Clear form
+                        document.getElementById('username').value = '';
+                        document.getElementById('password').value = '';
+                    }, 1000);
+                } else {
+                    showAlert('Logout failed', true);
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                showAlert('Network error during logout', true);
+            });
+        }
+
+        // Test user credentials info
+        console.log('Test users available:');
+        console.log('Username: admin, Password: admin123 (Admin user)');
+        console.log('Username: instructor1, Password: pass123 (Instructor)');
+        console.log('Username: student1, Password: pass123 (Student)');
+    </script>
+</body>
+</html>

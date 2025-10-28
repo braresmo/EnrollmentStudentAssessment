@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses - EduTech Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .card-hover { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-indigo-600">
+                    🎓 EduTech Management System
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <a href="/courses" class="text-indigo-600 font-medium border-b-2 border-indigo-600 pb-1">Courses</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/students" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
+                    <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    
+                    <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
+                        <div class="text-sm text-gray-600">
+                            <span class="text-indigo-600 font-medium" th:text="'Hello, ' + ${userName}">Hello, User</span>
+                            <span class="text-xs text-gray-500 ml-2" th:text="'(' + ${userRole} + ')'">(ROLE)</span>
+                        </div>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <span th:switch="${userRole}">
+                    <span th:case="'ADMIN'">All Courses</span>
+                    <span th:case="'INSTRUCTOR'">My Courses</span>
+                    <span th:case="'STUDENT'">My Enrolled Courses</span>
+                </span>
+            </h1>
+            <p class="text-gray-600" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Manage all courses in the system</span>
+                <span th:case="'INSTRUCTOR'">View and manage your assigned courses</span>
+                <span th:case="'STUDENT'">View your enrolled courses and progress</span>
+            </p>
+        </div>
+
+        <!-- Filters and Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 flex-1">
+                    <div class="flex-1">
+                        <input type="text" id="search-input" placeholder="Search courses..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="DRAFT">Draft</option>
+                        <option value="ARCHIVED">Archived</option>
+                    </select>
+                </div>
+
+                <!-- Add Course Button (Admin and Instructor only) -->
+                <div th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}">
+                    <button onclick="showAddCourseModal()" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        + Add Course
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Loading courses...</p>
+        </div>
+
+        <!-- Courses Grid -->
+        <div id="courses-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+            <!-- Courses will be loaded here by JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-12 hidden">
+            <div class="text-gray-400 text-6xl mb-4">📚</div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No courses found</h3>
+            <p class="text-gray-500 mb-4" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Start by creating your first course</span>
+                <span th:case="'INSTRUCTOR'">You haven't been assigned any courses yet</span>
+                <span th:case="'STUDENT'">You're not enrolled in any courses yet</span>
+            </p>
+            <button th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                    onclick="showAddCourseModal()" 
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                Create Your First Course
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Course Modal (Admin and Instructor only) -->
+    <div id="add-course-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Course</h2>
+            
+            <form id="add-course-form" class="space-y-4">
+                <div>
+                    <label for="course-title" class="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
+                    <input type="text" id="course-title" name="title" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="course-code" class="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
+                    <input type="text" id="course-code" name="code" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="course-status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="course-status" name="status" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="DRAFT">Draft</option>
+                        <option value="ACTIVE">Active</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="hideAddCourseModal()" 
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Create Course
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const userRole = /*[[${userRole}]]*/ '';
+        let allCourses = [];
+
+        // Load courses on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCourses();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search functionality
+            document.getElementById('search-input').addEventListener('input', filterCourses);
+            document.getElementById('status-filter').addEventListener('change', filterCourses);
+
+            // Add course form
+            document.getElementById('add-course-form').addEventListener('submit', handleAddCourse);
+        }
+
+        async function loadCourses() {
+            try {
+                const endpoint = getCoursesEndpoint();
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load courses');
+                }
+
+                allCourses = await response.json();
+                displayCourses(allCourses);
+            } catch (error) {
+                console.error('Error loading courses:', error);
+                showError('Failed to load courses. Please try again.');
+            }
+        }
+
+        function getCoursesEndpoint() {
+            switch(userRole) {
+                case 'STUDENT':
+                    return '/enrollment/getAll'; // Will need to filter for current user
+                case 'INSTRUCTOR':
+                    return '/course/my-courses';
+                default:
+                    return '/course/getAll';
+            }
+        }
+
+        function displayCourses(courses) {
+            document.getElementById('loading-state').classList.add('hidden');
+            
+            const container = document.getElementById('courses-container');
+            const emptyState = document.getElementById('empty-state');
+
+            if (courses.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            container.innerHTML = courses.map(course => createCourseCard(course)).join('');
+        }
+
+        function createCourseCard(course) {
+            const statusColor = {
+                'ACTIVE': 'bg-green-100 text-green-800',
+                'DRAFT': 'bg-yellow-100 text-yellow-800',
+                'ARCHIVED': 'bg-gray-100 text-gray-800'
+            };
+
+            return `
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 line-clamp-2">${course.title || 'Untitled Course'}</h3>
+                        <span class="text-xs px-2 py-1 rounded-full ${statusColor[course.status] || statusColor['DRAFT']}">
+                            ${course.status || 'DRAFT'}
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <p class="text-sm text-gray-600">
+                            <span class="font-medium">Code:</span> ${course.code || 'N/A'}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            <span class="font-medium">Published:</span> ${course.publishedAt ? new Date(course.publishedAt).toLocaleDateString() : 'Not published'}
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button onclick="viewCourse(${course.idCourse})" 
+                                class="flex-1 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors">
+                            View Details
+                        </button>
+                        ${userRole !== 'STUDENT' ? `
+                            <button onclick="editCourse(${course.idCourse})" 
+                                    class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                ✏️
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterCourses() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+
+            const filtered = allCourses.filter(course => {
+                const matchesSearch = !searchTerm || 
+                    (course.title && course.title.toLowerCase().includes(searchTerm)) ||
+                    (course.code && course.code.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || course.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            displayCourses(filtered);
+        }
+
+        // Modal functions
+        function showAddCourseModal() {
+            document.getElementById('add-course-modal').classList.remove('hidden');
+        }
+
+        function hideAddCourseModal() {
+            document.getElementById('add-course-modal').classList.add('hidden');
+            document.getElementById('add-course-form').reset();
+        }
+
+        async function handleAddCourse(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const courseData = {
+                title: formData.get('title'),
+                code: formData.get('code'),
+                status: formData.get('status'),
+                publishedAt: new Date().toISOString(),
+                instructorId: 1, // This should be the current user's ID
+                tenantId: 1
+            };
+
+            try {
+                const response = await fetch('/course/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(courseData),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    hideAddCourseModal();
+                    loadCourses(); // Reload courses
+                    showSuccess('Course created successfully!');
+                } else {
+                    throw new Error('Failed to create course');
+                }
+            } catch (error) {
+                console.error('Error creating course:', error);
+                showError('Failed to create course. Please try again.');
+            }
+        }
+
+        // Course actions
+        function viewCourse(courseId) {
+            // Navigate to course details (implement as needed)
+            console.log('View course:', courseId);
+            alert(`Course details for ID: ${courseId} - Feature coming soon!`);
+        }
+
+        function editCourse(courseId) {
+            // Navigate to course edit (implement as needed)
+            console.log('Edit course:', courseId);
+            alert(`Edit course ID: ${courseId} - Feature coming soon!`);
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            // Simple alert for now, could be improved with toast notifications
+            alert(message);
+        }
+
+        function showError(message) {
+            // Simple alert for now, could be improved with toast notifications
+            alert(message);
+        }
+
+        // Logout function
+        function logout() {
+            fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            });
+        }
+    </script>
+</body>
+</html>

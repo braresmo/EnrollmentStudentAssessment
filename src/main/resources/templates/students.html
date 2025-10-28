@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students - EduTech Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .card-hover { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-indigo-600">
+                    🎓 EduTech Management System
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <a href="/courses" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/students" class="text-indigo-600 font-medium border-b-2 border-indigo-600 pb-1">Students</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
+                    <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    
+                    <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
+                        <div class="text-sm text-gray-600">
+                            <span class="text-indigo-600 font-medium" th:text="'Hello, ' + ${userName}">Hello, User</span>
+                            <span class="text-xs text-gray-500 ml-2" th:text="'(' + ${userRole} + ')'">(ROLE)</span>
+                        </div>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <span th:switch="${userRole}">
+                    <span th:case="'ADMIN'">All Students</span>
+                    <span th:case="'INSTRUCTOR'">My Students</span>
+                </span>
+            </h1>
+            <p class="text-gray-600" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Manage all students in the system</span>
+                <span th:case="'INSTRUCTOR'">View students enrolled in your courses</span>
+            </p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-blue-500 mr-4">👨‍🎓</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Total Students</h3>
+                        <p id="total-students" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-green-500 mr-4">✅</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Active Students</h3>
+                        <p id="active-students" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-yellow-500 mr-4">📚</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Enrolled</h3>
+                        <p id="enrolled-students" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-purple-500 mr-4">🎯</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Graduates</h3>
+                        <p id="graduate-students" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 flex-1">
+                    <div class="flex-1">
+                        <input type="text" id="search-input" placeholder="Search students by name or email..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">Inactive</option>
+                    </select>
+                    <select id="course-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Courses</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Actions (Admin only) -->
+                <div th:if="${userRole == 'ADMIN'}" class="flex gap-2">
+                    <button onclick="exportStudents()" 
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        📊 Export
+                    </button>
+                    <button onclick="showAddStudentModal()" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        + Add Student
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Loading students...</p>
+        </div>
+
+        <!-- Students Table -->
+        <div id="students-container" class="bg-white rounded-lg shadow-md overflow-hidden hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrollments</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cohort</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Students will be loaded here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-12 hidden">
+            <div class="text-gray-400 text-6xl mb-4">👨‍🎓</div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No students found</h3>
+            <p class="text-gray-500 mb-4" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Start by adding your first student</span>
+                <span th:case="'INSTRUCTOR'">No students are enrolled in your courses yet</span>
+            </p>
+            <button th:if="${userRole == 'ADMIN'}" 
+                    onclick="showAddStudentModal()" 
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                Add Your First Student
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Student Modal (Admin only) -->
+    <div id="add-student-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Student</h2>
+            
+            <form id="add-student-form" class="space-y-4">
+                <div>
+                    <label for="student-first-name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input type="text" id="student-first-name" name="firstName" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="student-last-name" class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input type="text" id="student-last-name" name="lastName" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="student-email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" id="student-email" name="email" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="student-phone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input type="tel" id="student-phone" name="phone"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="hideAddStudentModal()" 
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Add Student
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const userRole = /*[[${userRole}]]*/ '';
+        let allStudents = [];
+        let allCourses = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+            loadCourses();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Search and filter functionality
+            document.getElementById('search-input').addEventListener('input', filterStudents);
+            document.getElementById('status-filter').addEventListener('change', filterStudents);
+            document.getElementById('course-filter').addEventListener('change', filterStudents);
+
+            // Add student form
+            document.getElementById('add-student-form').addEventListener('submit', handleAddStudent);
+        }
+
+        async function loadStudents() {
+            try {
+                const endpoint = getStudentsEndpoint();
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load students');
+                }
+
+                allStudents = await response.json();
+                displayStudents(allStudents);
+                updateStatistics(allStudents);
+            } catch (error) {
+                console.error('Error loading students:', error);
+                showError('Failed to load students. Please try again.');
+            }
+        }
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('/course/getAll', { credentials: 'same-origin' });
+                if (response.ok) {
+                    allCourses = await response.json();
+                    populateCourseFilter();
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        function getStudentsEndpoint() {
+            // For now, all roles use the same endpoint
+            // TODO: In the future, implement role-based filtering on the backend
+            return '/student/getAll';
+        }
+
+        function populateCourseFilter() {
+            const select = document.getElementById('course-filter');
+            allCourses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.idCourse;
+                option.textContent = course.title || `Course ${course.idCourse}`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateStatistics(students) {
+            const total = students.length;
+            const active = students.filter(s => s.isActive !== false).length;
+            // Count students with enrollments
+            const enrolled = students.filter(s => s.enrollments && s.enrollments.length > 0).length; 
+            const graduates = 0; // We don't have a graduated status in the current model
+
+            document.getElementById('total-students').textContent = total;
+            document.getElementById('active-students').textContent = active;
+            document.getElementById('enrolled-students').textContent = enrolled;
+            document.getElementById('graduate-students').textContent = graduates;
+        }
+
+        function displayStudents(students) {
+            document.getElementById('loading-state').classList.add('hidden');
+            
+            const container = document.getElementById('students-container');
+            const emptyState = document.getElementById('empty-state');
+            const tableBody = document.getElementById('students-table-body');
+
+            if (students.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            tableBody.innerHTML = students.map(student => createStudentRow(student)).join('');
+        }
+
+        function createStudentRow(student) {
+            const statusColors = {
+                'ACTIVE': 'bg-green-100 text-green-800',
+                'INACTIVE': 'bg-red-100 text-red-800'
+            };
+
+            // Use the correct property names from the Student/User model
+            const enrollmentCount = student.enrollments ? student.enrollments.length : 0;
+            const joinedDate = 'N/A'; // We don't have createdAt in the current model
+            const status = student.isActive ? 'ACTIVE' : 'INACTIVE';
+            const studentName = student.name || 'Unknown';
+            const nameParts = studentName.split(' ');
+            const initials = nameParts.length >= 2 ? 
+                nameParts[0][0] + nameParts[nameParts.length - 1][0] : 
+                studentName.substring(0, 2);
+
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center text-white font-medium">
+                                    ${initials.toUpperCase()}
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    ${studentName}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    ID: ${student.userId}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${student.email || 'N/A'}</div>
+                        <div class="text-sm text-gray-500">Student #: ${student.studentNumber || 'N/A'}</div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${enrollmentCount} course${enrollmentCount !== 1 ? 's' : ''}
+                        </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[status]}">
+                            ${status}
+                        </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${student.cohort || 'N/A'}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewStudent(${student.userId})" 
+                                    class="text-indigo-600 hover:text-indigo-900">View</button>
+                            ${userRole === 'ADMIN' ? `
+                                <button onclick="editStudent(${student.userId})" 
+                                        class="text-gray-600 hover:text-gray-900">Edit</button>
+                                <button onclick="deleteStudent(${student.userId})" 
+                                        class="text-red-600 hover:text-red-900">Delete</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function filterStudents() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const courseFilter = document.getElementById('course-filter').value;
+
+            const filtered = allStudents.filter(student => {
+                const matchesSearch = !searchTerm || 
+                    (student.name && student.name.toLowerCase().includes(searchTerm)) ||
+                    (student.email && student.email.toLowerCase().includes(searchTerm)) ||
+                    (student.studentNumber && student.studentNumber.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || 
+                    (statusFilter === 'ACTIVE' && student.isActive) ||
+                    (statusFilter === 'INACTIVE' && !student.isActive);
+                
+                // For now, ignore course filter since we'd need to check enrollments
+                // TODO: Implement course filtering when needed
+                const matchesCourse = !courseFilter;
+
+                return matchesSearch && matchesStatus && matchesCourse;
+            });
+
+            displayStudents(filtered);
+        }
+
+        // Modal functions
+        function showAddStudentModal() {
+            document.getElementById('add-student-modal').classList.remove('hidden');
+        }
+
+        function hideAddStudentModal() {
+            document.getElementById('add-student-modal').classList.add('hidden');
+            document.getElementById('add-student-form').reset();
+        }
+
+        async function handleAddStudent(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const studentData = {
+                name: `${formData.get('firstName')} ${formData.get('lastName')}`,
+                email: formData.get('email'),
+                passwordHash: '$2a$10$defaultpassword', // Default password, should be changed
+                isActive: true,
+                tenantId: 1,
+                studentNumber: 'STU' + Date.now(), // Generate unique student number
+                cohort: new Date().getFullYear().toString(), // Current year as cohort
+                roles: [{ name: 'STUDENT' }]
+            };
+
+            try {
+                const response = await fetch('/student/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(studentData),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    hideAddStudentModal();
+                    loadStudents(); // Reload students
+                    showSuccess('Student added successfully!');
+                } else {
+                    throw new Error('Failed to add student');
+                }
+            } catch (error) {
+                console.error('Error adding student:', error);
+                showError('Failed to add student. Please try again.');
+            }
+        }
+
+        // Student actions
+        function viewStudent(studentId) {
+            alert(`View student details for ID: ${studentId} - Feature coming soon!`);
+        }
+
+        function editStudent(studentId) {
+            alert(`Edit student ID: ${studentId} - Feature coming soon!`);
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm('Are you sure you want to delete this student?')) {
+                // Implement delete functionality
+                alert(`Delete student ID: ${studentId} - Feature coming soon!`);
+            }
+        }
+
+        function exportStudents() {
+            alert('Export students - Feature coming soon!');
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // Logout function
+        function logout() {
+            fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            });
+        }
+    </script>
+</body>
+</html>

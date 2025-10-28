@@ -19,7 +19,6 @@ public class StudentController {
     @Autowired
     private StudentService studentService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<Student>> listar() {
         try {
@@ -29,7 +28,6 @@ public class StudentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Student> save(@RequestBody Student student) {
@@ -42,7 +40,6 @@ public class StudentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<Student>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class StudentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Student> update(@RequestBody Student student) {
@@ -72,7 +68,6 @@ public class StudentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByStudentNumber/{studentNumber}")
     public ResponseEntity<Student> findByStudentNumber(@PathVariable String studentNumber) {
         try {
@@ -87,7 +82,6 @@ public class StudentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByCohort/{cohort}")
     public ResponseEntity<List<Student>> findByCohort(@PathVariable String cohort) {
         try {

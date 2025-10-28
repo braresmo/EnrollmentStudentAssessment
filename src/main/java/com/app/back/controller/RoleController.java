@@ -19,7 +19,6 @@ public class RoleController {
     @Autowired
     private RoleService roleService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<Role>> listar() {
         try {
@@ -29,7 +28,6 @@ public class RoleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Role> save(@RequestBody Role role) {
@@ -42,7 +40,6 @@ public class RoleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<Role>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class RoleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Role> update(@RequestBody Role role) {
@@ -72,7 +68,6 @@ public class RoleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByName/{name}")
     public ResponseEntity<Role> findByName(@PathVariable String name) {
         try {

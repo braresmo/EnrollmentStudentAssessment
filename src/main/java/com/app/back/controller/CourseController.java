@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +25,9 @@ import org.springframework.web.client.HttpServerErrorException.InternalServerErr
 
 import com.app.back.core.impl.CourseService;
 import com.app.back.model.Course;
+import com.app.back.util.SessionManager;
+
+import jakarta.servlet.http.HttpSession;
 
 
 
@@ -38,7 +40,6 @@ public class CourseController {
 	private CourseService courseService;
 	
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/getAll")
 	public ResponseEntity<List<Course>> listar() {
 		try {
@@ -51,7 +52,6 @@ public class CourseController {
 
 	}
 	
-	@CrossOrigin(origins = "*")
 	@ResponseStatus(HttpStatus.OK)
 	@PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Course> save(@RequestBody Course course) {
@@ -65,7 +65,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@ResponseStatus(HttpStatus.OK)
 	@DeleteMapping(value = "/delete/{id}")
 	public ResponseEntity<List<Course>> delete(@PathVariable Integer id) {
@@ -84,7 +83,6 @@ public class CourseController {
 
 	}
 	
-	@CrossOrigin(origins = "*")
 	@ResponseStatus(HttpStatus.OK)
 	@PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Course> update(@RequestBody Course course) {
@@ -101,7 +99,6 @@ public class CourseController {
 	
 	// Filtering endpoints
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findByStatus/{status}")
 	public ResponseEntity<List<Course>> findByStatus(@PathVariable String status) {
 		try {
@@ -112,7 +109,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findByInstructorId/{instructorId}")
 	public ResponseEntity<List<Course>> findByInstructorId(@PathVariable Integer instructorId) {
 		try {
@@ -123,7 +119,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findByCodeContaining")
 	public ResponseEntity<List<Course>> findByCodeContaining(@RequestParam String code) {
 		try {
@@ -134,7 +129,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findByTitleContaining")
 	public ResponseEntity<List<Course>> findByTitleContaining(@RequestParam String title) {
 		try {
@@ -145,7 +139,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findByDateRange")
 	public ResponseEntity<List<Course>> findByDateRange(@RequestParam String startDate, @RequestParam String endDate) {
 		try {
@@ -161,7 +154,6 @@ public class CourseController {
 		}
 	}
 	
-	@CrossOrigin(origins = "*")
 	@GetMapping(path = "/findWithFilters")
 	public ResponseEntity<List<Course>> findCoursesWithFilters(
 			@RequestParam(required = false) String status,
@@ -170,6 +162,24 @@ public class CourseController {
 			@RequestParam(required = false) String title) {
 		try {
 			List<Course> courses = courseService.findCoursesWithFilters(status, instructorId, code, title);
+			return ResponseEntity.ok(courses);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@GetMapping(path = "/my-courses")
+	public ResponseEntity<List<Course>> getMyCourses(HttpSession session) {
+		try {
+			SessionManager sessionManager = new SessionManager();
+			Integer userId = sessionManager.getCurrentUserId(session);
+			
+			if (userId == null) {
+				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			}
+			
+			// For instructors, filter by instructor ID which is the same as user ID
+			List<Course> courses = courseService.findCoursesWithFilters(null, userId, null, null);
 			return ResponseEntity.ok(courses);
 		} catch (Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

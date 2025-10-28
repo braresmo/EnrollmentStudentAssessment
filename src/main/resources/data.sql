@@ -22,23 +22,27 @@ INSERT INTO role_permissions (role_id, permission) VALUES (3, 'MANAGE_USERS');
 INSERT INTO role_permissions (role_id, permission) VALUES (3, 'SYSTEM_CONFIG');
 
 -- 3. BASE USERS (parent table in JOINED inheritance)
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'John Smith', 'john.smith@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+-- Password for all users is "password123" (BCrypt encoded)
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'John Smith', 'john.smith@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'Sarah Johnson', 'sarah.johnson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'Sarah Johnson', 'sarah.johnson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'Michael Brown', 'michael.brown@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'Michael Brown', 'michael.brown@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'Emily Davis', 'emily.davis@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'Emily Davis', 'emily.davis@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'David Wilson', 'david.wilson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'David Wilson', 'david.wilson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
-INSERT INTO users (tenant_id, name, email, password_hash, is_active) VALUES 
-(1, 'Lisa Anderson', 'lisa.anderson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true);
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'Lisa Anderson', 'lisa.anderson@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
+
+INSERT INTO users (tenant_id, name, email, password_hash, is_active, failed_login_attempts, account_locked_until) VALUES 
+(1, 'Brandon Admin', 'brandon.admin@email.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', true, 0, null);
 
 -- 4. INSTRUCTORS (JOINED inheritance - user_id is FK to user)
 INSERT INTO instructor (user_id, employee_number, office_hours) VALUES 
@@ -49,6 +53,9 @@ INSERT INTO instructor (user_id, employee_number, office_hours) VALUES
 
 INSERT INTO instructor (user_id, employee_number, office_hours) VALUES 
 (3, 'EMP003', 'Monday, Wednesday and Friday 10:00 AM-12:00 PM');
+
+INSERT INTO instructor (user_id, employee_number, office_hours) VALUES 
+(7, 'EMP004', 'Monday to Friday 8:00 AM-5:00 PM - Admin Hours');
 
 -- 5. STUDENTS (JOINED inheritance - user_id is FK to user)
 INSERT INTO student (user_id, student_number, cohort) VALUES 
@@ -67,6 +74,7 @@ INSERT INTO user_roles (user_id, role_id) VALUES (3, 2); -- Michael is INSTRUCTO
 INSERT INTO user_roles (user_id, role_id) VALUES (4, 1); -- Emily is STUDENT
 INSERT INTO user_roles (user_id, role_id) VALUES (5, 1); -- David is STUDENT
 INSERT INTO user_roles (user_id, role_id) VALUES (6, 1); -- Lisa is STUDENT
+INSERT INTO user_roles (user_id, role_id) VALUES (7, 3); -- Brandon is ADMIN
 
 -- 7. COURSES (require instructor_id)
 INSERT INTO course (id_tenant, code, title, status, published_at, instructor_id) VALUES 

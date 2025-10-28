@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollments - EduTech Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .card-hover { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-indigo-600">
+                    🎓 EduTech Management System
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <a href="/courses" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/students" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
+                    <a href="/enrollments" class="text-indigo-600 font-medium border-b-2 border-indigo-600 pb-1">Enrollments</a>
+                    
+                    <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
+                        <div class="text-sm text-gray-600">
+                            <span class="text-indigo-600 font-medium" th:text="'Hello, ' + ${userName}">Hello, User</span>
+                            <span class="text-xs text-gray-500 ml-2" th:text="'(' + ${userRole} + ')'">(ROLE)</span>
+                        </div>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <span th:switch="${userRole}">
+                    <span th:case="'ADMIN'">All Enrollments</span>
+                    <span th:case="'INSTRUCTOR'">My Course Enrollments</span>
+                    <span th:case="'STUDENT'">My Enrollments</span>
+                </span>
+            </h1>
+            <p class="text-gray-600" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Manage all student enrollments in the system</span>
+                <span th:case="'INSTRUCTOR'">View enrollments for your courses</span>
+                <span th:case="'STUDENT'">Track your course enrollments and progress</span>
+            </p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-blue-500 mr-4">📚</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Total Enrollments</h3>
+                        <p id="total-enrollments" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-green-500 mr-4">✅</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Active</h3>
+                        <p id="active-enrollments" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-yellow-500 mr-4">🎯</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Completed</h3>
+                        <p id="completed-enrollments" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="text-3xl text-purple-500 mr-4">📅</div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">This Month</h3>
+                        <p id="new-enrollments" class="text-2xl font-bold text-gray-800">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Actions -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <!-- Search and Filters -->
+                <div class="flex flex-col md:flex-row gap-4 flex-1">
+                    <div class="flex-1">
+                        <input type="text" id="search-input" placeholder="Search by student or course..." 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <select id="status-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="DROPPED">Dropped</option>
+                        <option value="PENDING">Pending</option>
+                    </select>
+                    <select id="course-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Courses</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                    <input type="date" id="date-filter" 
+                           class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Actions -->
+                <div th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" class="flex gap-2">
+                    <button onclick="exportEnrollments()" 
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                        📊 Export
+                    </button>
+                    <button onclick="showAddEnrollmentModal()" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        + New Enrollment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading-state" class="text-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p class="text-gray-600 mt-2">Loading enrollments...</p>
+        </div>
+
+        <!-- Enrollments Table -->
+        <div id="enrollments-container" class="bg-white rounded-lg shadow-md overflow-hidden hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrollment Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrollments-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Enrollments will be loaded here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-12 hidden">
+            <div class="text-gray-400 text-6xl mb-4">📚</div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No enrollments found</h3>
+            <p class="text-gray-500 mb-4" th:switch="${userRole}">
+                <span th:case="'ADMIN'">Start by enrolling students in courses</span>
+                <span th:case="'INSTRUCTOR'">No students are enrolled in your courses yet</span>
+                <span th:case="'STUDENT'">You're not enrolled in any courses yet</span>
+            </p>
+            <button th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                    onclick="showAddEnrollmentModal()" 
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                Create First Enrollment
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Enrollment Modal -->
+    <div id="add-enrollment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">New Enrollment</h2>
+            
+            <form id="add-enrollment-form" class="space-y-4">
+                <div>
+                    <label for="enrollment-student" class="block text-sm font-medium text-gray-700 mb-2">Student</label>
+                    <select id="enrollment-student" name="studentId" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select Student</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div>
+                    <label for="enrollment-course" class="block text-sm font-medium text-gray-700 mb-2">Course</label>
+                    <select id="enrollment-course" name="courseId" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="">Select Course</option>
+                        <!-- Will be populated by JavaScript -->
+                    </select>
+                </div>
+
+                <div>
+                    <label for="enrollment-date" class="block text-sm font-medium text-gray-700 mb-2">Enrollment Date</label>
+                    <input type="date" id="enrollment-date" name="enrollmentDate" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <div>
+                    <label for="enrollment-status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="enrollment-status" name="status" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="ACTIVE">Active</option>
+                        <option value="PENDING">Pending</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="hideAddEnrollmentModal()" 
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Create Enrollment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const userRole = /*[[${userRole}]]*/ '';
+        let allEnrollments = [];
+        let allCourses = [];
+        let allStudents = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadEnrollments();
+            loadCourses();
+            loadStudents();
+            setupEventListeners();
+            setTodayDate();
+        });
+
+        function setupEventListeners() {
+            // Search and filter functionality
+            document.getElementById('search-input').addEventListener('input', filterEnrollments);
+            document.getElementById('status-filter').addEventListener('change', filterEnrollments);
+            document.getElementById('course-filter').addEventListener('change', filterEnrollments);
+            document.getElementById('date-filter').addEventListener('change', filterEnrollments);
+
+            // Add enrollment form
+            document.getElementById('add-enrollment-form').addEventListener('submit', handleAddEnrollment);
+        }
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('enrollment-date').value = today;
+        }
+
+        async function loadEnrollments() {
+            try {
+                const endpoint = getEnrollmentsEndpoint();
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load enrollments');
+                }
+
+                allEnrollments = await response.json();
+                displayEnrollments(allEnrollments);
+                updateStatistics(allEnrollments);
+            } catch (error) {
+                console.error('Error loading enrollments:', error);
+                showError('Failed to load enrollments. Please try again.');
+            }
+        }
+
+        async function loadCourses() {
+            try {
+                const endpoint = userRole === 'INSTRUCTOR' ? '/course/my-courses' : '/course/getAll';
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                if (response.ok) {
+                    allCourses = await response.json();
+                    populateCourseFilter();
+                    populateEnrollmentCourses();
+                }
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        async function loadStudents() {
+            try {
+                const endpoint = userRole === 'ADMIN' ? '/student/getAll' : '/student/my-students';
+                const response = await fetch(endpoint, { credentials: 'same-origin' });
+                if (response.ok) {
+                    allStudents = await response.json();
+                    populateEnrollmentStudents();
+                }
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+
+        function getEnrollmentsEndpoint() {
+            // For now, all roles use the same endpoint
+            // TODO: In the future, implement role-based filtering on the backend
+            return '/enrollment/getAll';
+        }
+
+        function populateCourseFilter() {
+            const select = document.getElementById('course-filter');
+            allCourses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.idCourse;
+                option.textContent = course.title || `Course ${course.idCourse}`;
+                select.appendChild(option);
+            });
+        }
+
+        function populateEnrollmentCourses() {
+            const select = document.getElementById('enrollment-course');
+            allCourses.forEach(course => {
+                const option = document.createElement('option');
+                option.value = course.idCourse;
+                option.textContent = course.title || `Course ${course.idCourse}`;
+                select.appendChild(option);
+            });
+        }
+
+        function populateEnrollmentStudents() {
+            const select = document.getElementById('enrollment-student');
+            allStudents.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.userId;
+                option.textContent = `${student.name || 'Unknown'} (${student.email || ''})`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateStatistics(enrollments) {
+            const total = enrollments.length;
+            const active = enrollments.filter(e => e.status === 'ACTIVE').length;
+            const completed = enrollments.filter(e => e.status === 'COMPLETED').length;
+            
+            // Calculate new enrollments this month
+            const thisMonth = new Date();
+            thisMonth.setDate(1);
+            const newThisMonth = enrollments.filter(e => {
+                const enrolled = new Date(e.enrolledAt);
+                return enrolled >= thisMonth;
+            }).length;
+
+            document.getElementById('total-enrollments').textContent = total;
+            document.getElementById('active-enrollments').textContent = active;
+            document.getElementById('completed-enrollments').textContent = completed;
+            document.getElementById('new-enrollments').textContent = newThisMonth;
+        }
+
+        function displayEnrollments(enrollments) {
+            document.getElementById('loading-state').classList.add('hidden');
+            
+            const container = document.getElementById('enrollments-container');
+            const emptyState = document.getElementById('empty-state');
+            const tableBody = document.getElementById('enrollments-table-body');
+
+            if (enrollments.length === 0) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            tableBody.innerHTML = enrollments.map(enrollment => createEnrollmentRow(enrollment)).join('');
+        }
+
+        function createEnrollmentRow(enrollment) {
+            const statusColors = {
+                'ACTIVE': 'bg-green-100 text-green-800',
+                'COMPLETED': 'bg-blue-100 text-blue-800',
+                'DROPPED': 'bg-red-100 text-red-800',
+                'PENDING': 'bg-yellow-100 text-yellow-800'
+            };
+
+            const enrollmentDate = enrollment.enrolledAt ? new Date(enrollment.enrolledAt).toLocaleDateString() : 'N/A';
+            const progress = 0; // We don't have progress in the current model
+            const grade = 'N/A'; // We don't have grade in the current model
+
+            // Get student and course info from the nested objects
+            const studentName = enrollment.student ? enrollment.student.name : 'Unknown Student';
+            const courseName = enrollment.course ? enrollment.course.title : 'Unknown Course';
+            const studentId = enrollment.student ? enrollment.student.userId : 'N/A';
+            const courseId = enrollment.course ? enrollment.course.idCourse : 'N/A';
+
+            // Generate initials for student
+            const nameParts = studentName.split(' ');
+            const initials = nameParts.length >= 2 ? 
+                nameParts[0][0] + nameParts[nameParts.length - 1][0] : 
+                studentName.substring(0, 2);
+
+            return `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-8 w-8">
+                                <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center text-white text-sm font-medium">
+                                    ${initials.toUpperCase()}
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${studentName}</div>
+                                <div class="text-sm text-gray-500">ID: ${studentId}</div>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${courseName}</div>
+                        <div class="text-sm text-gray-500">Course ID: ${courseId}</div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${enrollmentDate}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${progress}%</span>
+                        </div>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[enrollment.status] || statusColors['ACTIVE']}">
+                            ${enrollment.status || 'ACTIVE'}
+                        </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${grade}
+                    </td>
+                    
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="viewEnrollment(${enrollment.enrollmentId})" 
+                                    class="text-indigo-600 hover:text-indigo-900">View</button>
+                            ${userRole !== 'STUDENT' ? `
+                                <button onclick="editEnrollment(${enrollment.enrollmentId})" 
+                                        class="text-gray-600 hover:text-gray-900">Edit</button>
+                                <button onclick="updateGrade(${enrollment.enrollmentId})" 
+                                        class="text-blue-600 hover:text-blue-900">Grade</button>
+                            ` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function filterEnrollments() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const courseFilter = document.getElementById('course-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+
+            const filtered = allEnrollments.filter(enrollment => {
+                const matchesSearch = !searchTerm || 
+                    (enrollment.student && enrollment.student.name && enrollment.student.name.toLowerCase().includes(searchTerm)) ||
+                    (enrollment.course && enrollment.course.title && enrollment.course.title.toLowerCase().includes(searchTerm));
+                
+                const matchesStatus = !statusFilter || enrollment.status === statusFilter;
+                const matchesCourse = !courseFilter || (enrollment.course && enrollment.course.idCourse == courseFilter);
+                
+                const matchesDate = !dateFilter || 
+                    (enrollment.enrolledAt && enrollment.enrolledAt.includes(dateFilter));
+
+                return matchesSearch && matchesStatus && matchesCourse && matchesDate;
+            });
+
+            displayEnrollments(filtered);
+        }
+
+        // Modal functions
+        function showAddEnrollmentModal() {
+            document.getElementById('add-enrollment-modal').classList.remove('hidden');
+        }
+
+        function hideAddEnrollmentModal() {
+            document.getElementById('add-enrollment-modal').classList.add('hidden');
+            document.getElementById('add-enrollment-form').reset();
+            setTodayDate();
+        }
+
+        async function handleAddEnrollment(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            
+            // We need to create the enrollment with Student and Course objects
+            const enrollmentData = {
+                status: formData.get('status'),
+                enrolledAt: new Date(formData.get('enrollmentDate')).toISOString(),
+                student: {
+                    userId: parseInt(formData.get('studentId'))
+                },
+                course: {
+                    idCourse: parseInt(formData.get('courseId'))
+                }
+            };
+
+            try {
+                const response = await fetch('/enrollment/save', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(enrollmentData),
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    hideAddEnrollmentModal();
+                    loadEnrollments(); // Reload enrollments
+                    showSuccess('Enrollment created successfully!');
+                } else {
+                    throw new Error('Failed to create enrollment');
+                }
+            } catch (error) {
+                console.error('Error creating enrollment:', error);
+                showError('Failed to create enrollment. Please try again.');
+            }
+        }
+
+        // Enrollment actions
+        function viewEnrollment(enrollmentId) {
+            alert(`View enrollment details for ID: ${enrollmentId} - Feature coming soon!`);
+        }
+
+        function editEnrollment(enrollmentId) {
+            alert(`Edit enrollment ID: ${enrollmentId} - Feature coming soon!`);
+        }
+
+        function updateGrade(enrollmentId) {
+            const grade = prompt('Enter new grade:');
+            if (grade !== null) {
+                alert(`Update grade for enrollment ID: ${enrollmentId} to ${grade} - Feature coming soon!`);
+            }
+        }
+
+        function exportEnrollments() {
+            alert('Export enrollments - Feature coming soon!');
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            alert(message);
+        }
+
+        function showError(message) {
+            alert(message);
+        }
+
+        // Logout function
+        function logout() {
+            fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            });
+            }
+    </script>
+</body>
+</html>

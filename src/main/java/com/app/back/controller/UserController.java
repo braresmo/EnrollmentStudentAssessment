@@ -19,7 +19,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<User>> listar() {
         try {
@@ -29,7 +28,6 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> save(@RequestBody User user) {
@@ -42,7 +40,6 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<User>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<User> update(@RequestBody User user) {
@@ -72,7 +68,6 @@ public class UserController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByEmail/{email}")
     public ResponseEntity<User> findByEmail(@PathVariable String email) {
         try {

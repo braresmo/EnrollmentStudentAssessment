@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enrollment Management - EduTech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .form-container, .table-container { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg mb-6">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-yellow-600">
+                    📝 Enrollment Management
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <a href="courses.html" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
+                    <a href="students.html" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
+                    <a href="instructors.html" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a href="#" class="text-yellow-600 font-medium">Enrollments</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        
+        <!-- Student Filter Info (shown when filtering by specific student) -->
+        <div id="student-filter-info" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 hidden">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        <strong>Filtering:</strong> <span id="student-filter-name">Showing enrollments for selected student</span>
+                    </p>
+                </div>
+                <div class="ml-auto">
+                    <button id="clear-student-filter" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                        Show All Enrollments
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructor Filter Info (shown when filtering by specific instructor) -->
+        <div id="instructor-filter-info" class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6 hidden">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-purple-700">
+                        <strong>Filtering:</strong> <span id="instructor-filter-name">Showing enrollments taught by selected instructor</span>
+                    </p>
+                </div>
+                <div class="ml-auto">
+                    <button id="clear-instructor-filter" class="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                        Show All Enrollments
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Filter Info (shown when filtering by specific course) -->
+        <div id="course-filter-info" class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 hidden">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">
+                        <strong>Filtering:</strong> <span id="course-filter-name">Showing enrollments for selected course</span>
+                    </p>
+                </div>
+                <div class="ml-auto">
+                    <button id="clear-course-filter" class="text-green-600 hover:text-green-800 text-sm font-medium">
+                        Show All Enrollments
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form for Adding and Updating Enrollments -->
+        <div id="form-container" class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 id="form-title" class="text-2xl font-semibold mb-4 text-gray-700">Create New Enrollment</h2>
+            <form id="enrollment-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="hidden" id="enrollment-id">
+                
+                <div>
+                    <label for="enrollment-student" class="block text-sm font-medium text-gray-700">Student</label>
+                    <select id="enrollment-student" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">Select Student</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="enrollment-course" class="block text-sm font-medium text-gray-700">Course</label>
+                    <select id="enrollment-course" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">Select Course</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="enrollment-status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="enrollment-status" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">Select Status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="DROPPED">Dropped</option>
+                        <option value="SUSPENDED">Suspended</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="enrollment-date" class="block text-sm font-medium text-gray-700">Enrollment Date</label>
+                    <input type="datetime-local" id="enrollment-date" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                </div>
+
+                <div class="md:col-span-2 flex space-x-3">
+                    <button type="submit" id="submit-btn" class="bg-yellow-600 text-white px-6 py-2 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition duration-200">
+                        Create Enrollment
+                    </button>
+                    <button type="button" id="cancel-btn" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition duration-200" style="display: none;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+            <h3 class="text-lg font-semibold mb-3 text-gray-700">Filters</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="filter-status" class="block text-sm font-medium text-gray-700">Filter by Status</label>
+                    <select id="filter-status" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">All Statuses</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="DROPPED">Dropped</option>
+                        <option value="SUSPENDED">Suspended</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filter-student" class="block text-sm font-medium text-gray-700">Filter by Student</label>
+                    <select id="filter-student" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">All Students</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="filter-course" class="block text-sm font-medium text-gray-700">Filter by Course</label>
+                    <select id="filter-course" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm">
+                        <option value="">All Courses</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrollments Table -->
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700">All Enrollments</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                            <th class="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                            <th class="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled At</th>
+                            <th class="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrollments-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- Enrollment rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let enrollments = [];
+        let students = [];
+        let courses = [];
+
+        // Load data for dropdowns
+        async function loadDropdownData() {
+            try {
+                // Load students
+                const studentsResponse = await fetch(`${API_BASE}/student/getAll`);
+                if (studentsResponse.ok) {
+                    students = await studentsResponse.json();
+                    populateStudentDropdowns();
+                }
+
+                // Load courses
+                const coursesResponse = await fetch(`${API_BASE}/course/getAll`);
+                if (coursesResponse.ok) {
+                    courses = await coursesResponse.json();
+                    populateCourseDropdowns();
+                }
+            } catch (error) {
+                console.error('Error loading dropdown data:', error);
+            }
+        }
+
+        // Populate student dropdowns
+        function populateStudentDropdowns() {
+            const selects = ['enrollment-student', 'filter-student'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const placeholder = selectId.includes('filter') ? 'All Students' : 'Select Student';
+                select.innerHTML = `<option value="">${placeholder}</option>`;
+                students.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.userId;
+                    option.textContent = `${student.name} (${student.studentNumber})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Populate course dropdowns
+        function populateCourseDropdowns() {
+            const selects = ['enrollment-course', 'filter-course'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                const placeholder = selectId.includes('filter') ? 'All Courses' : 'Select Course';
+                select.innerHTML = `<option value="">${placeholder}</option>`;
+                courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.idCourse;
+                    option.textContent = `${course.code} - ${course.title}`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        // Load all enrollments
+        async function loadEnrollments() {
+            try {
+                const response = await fetch(`${API_BASE}/enrollment/getAll`);
+                if (response.ok) {
+                    enrollments = await response.json();
+                    displayEnrollments();
+                } else {
+                    console.error('Failed to load enrollments');
+                }
+            } catch (error) {
+                console.error('Error loading enrollments:', error);
+            }
+        }
+
+        // Display enrollments in table
+        function displayEnrollments(filteredEnrollments = null) {
+            const tbody = document.getElementById('enrollments-table-body');
+            tbody.innerHTML = '';
+
+            const enrollmentsToShow = filteredEnrollments || enrollments;
+
+            enrollmentsToShow.forEach(enrollment => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const studentName = enrollment.student ? enrollment.student.name : 'Unknown Student';
+                const courseName = enrollment.course ? `${enrollment.course.code} - ${enrollment.course.title}` : 'Unknown Course';
+                const enrolledDate = new Date(enrollment.enrolledAt).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${studentName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${courseName}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(enrollment.status)}">
+                            ${enrollment.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${enrolledDate}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="editEnrollment(${enrollment.enrollmentId})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                        <button onclick="deleteEnrollment(${enrollment.enrollmentId})" class="text-red-600 hover:text-red-900">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Get status color for badge
+        function getStatusColor(status) {
+            switch (status) {
+                case 'ACTIVE': return 'bg-green-100 text-green-800';
+                case 'COMPLETED': return 'bg-blue-100 text-blue-800';
+                case 'DROPPED': return 'bg-red-100 text-red-800';
+                case 'SUSPENDED': return 'bg-yellow-100 text-yellow-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        // Add or update enrollment
+        document.getElementById('enrollment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const enrollmentData = {
+                status: document.getElementById('enrollment-status').value,
+                enrolledAt: new Date(document.getElementById('enrollment-date').value).toISOString(),
+                student: {
+                    userId: parseInt(document.getElementById('enrollment-student').value)
+                },
+                course: {
+                    idCourse: parseInt(document.getElementById('enrollment-course').value)
+                }
+            };
+
+            const enrollmentId = document.getElementById('enrollment-id').value;
+            
+            try {
+                let response;
+                if (enrollmentId) {
+                    // Update enrollment
+                    enrollmentData.enrollmentId = parseInt(enrollmentId);
+                    response = await fetch(`${API_BASE}/enrollment/update`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(enrollmentData)
+                    });
+                } else {
+                    // Add new enrollment
+                    response = await fetch(`${API_BASE}/enrollment/save`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(enrollmentData)
+                    });
+                }
+
+                if (response.ok) {
+                    resetForm();
+                    loadEnrollments();
+                    alert(enrollmentId ? 'Enrollment updated successfully!' : 'Enrollment created successfully!');
+                } else {
+                    const errorText = await response.text();
+                    alert(`Error saving enrollment: ${errorText}`);
+                }
+            } catch (error) {
+                console.error('Error saving enrollment:', error);
+                alert('Error saving enrollment. Please try again.');
+            }
+        });
+
+        // Edit enrollment
+        function editEnrollment(enrollmentId) {
+            const enrollment = enrollments.find(e => e.enrollmentId === enrollmentId);
+            if (enrollment) {
+                document.getElementById('enrollment-id').value = enrollment.enrollmentId;
+                document.getElementById('enrollment-student').value = enrollment.student ? enrollment.student.userId : '';
+                document.getElementById('enrollment-course').value = enrollment.course ? enrollment.course.idCourse : '';
+                document.getElementById('enrollment-status').value = enrollment.status;
+                document.getElementById('enrollment-date').value = new Date(enrollment.enrolledAt).toISOString().slice(0, 16);
+                
+                document.getElementById('form-title').textContent = 'Edit Enrollment';
+                document.getElementById('submit-btn').textContent = 'Update Enrollment';
+                document.getElementById('cancel-btn').style.display = 'inline-block';
+            }
+        }
+
+        // Delete enrollment
+        async function deleteEnrollment(enrollmentId) {
+            if (confirm('Are you sure you want to delete this enrollment? This action cannot be undone.')) {
+                try {
+                    const response = await fetch(`${API_BASE}/enrollment/delete/${enrollmentId}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadEnrollments();
+                        alert('Enrollment deleted successfully!');
+                    } else {
+                        alert('Error deleting enrollment. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting enrollment:', error);
+                    alert('Error deleting enrollment. Please try again.');
+                }
+            }
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('enrollment-form').reset();
+            document.getElementById('enrollment-id').value = '';
+            document.getElementById('form-title').textContent = 'Create New Enrollment';
+            document.getElementById('submit-btn').textContent = 'Create Enrollment';
+            document.getElementById('cancel-btn').style.display = 'none';
+            
+            // Set default date to now
+            const now = new Date();
+            document.getElementById('enrollment-date').value = now.toISOString().slice(0, 16);
+        }
+
+        // Cancel edit
+        document.getElementById('cancel-btn').addEventListener('click', resetForm);
+
+        // Apply filters
+        function applyFilters() {
+            const statusFilter = document.getElementById('filter-status').value;
+            const studentFilter = document.getElementById('filter-student').value;
+            const courseFilter = document.getElementById('filter-course').value;
+
+            let filtered = enrollments;
+
+            // First, check if we have a special instructor filter active (from URL)
+            if (window.currentInstructorFilter) {
+                // Find courses taught by this instructor
+                const instructorCourses = courses.filter(c => c.instructor && c.instructor.userId == window.currentInstructorFilter);
+                const courseIds = instructorCourses.map(c => c.idCourse);
+                // Filter enrollments to only show those for courses taught by this instructor
+                filtered = filtered.filter(e => courseIds.includes(e.course.idCourse));
+            }
+
+            if (statusFilter) {
+                filtered = filtered.filter(e => e.status === statusFilter);
+            }
+
+            if (studentFilter) {
+                filtered = filtered.filter(e => e.student && e.student.userId == studentFilter);
+            }
+
+            if (courseFilter) {
+                filtered = filtered.filter(e => e.course && e.course.idCourse == courseFilter);
+            }
+
+            displayEnrollments(filtered);
+        }
+
+        // Add filter event listeners
+        document.getElementById('filter-status').addEventListener('change', applyFilters);
+        document.getElementById('filter-student').addEventListener('change', function() {
+            const studentId = this.value;
+            // Hide all other filter info banners first
+            document.getElementById('instructor-filter-info').classList.add('hidden');
+            document.getElementById('course-filter-info').classList.add('hidden');
+            
+            if (studentId) {
+                showStudentFilterInfo(studentId);
+                // Update page title
+                setTimeout(() => {
+                    const studentName = getStudentName(studentId);
+                    document.querySelector('h2').textContent = studentName ? `Enrollments for ${studentName}` : `Enrollments for Student ID: ${studentId}`;
+                }, 100);
+            } else {
+                document.getElementById('student-filter-info').classList.add('hidden');
+                document.querySelector('h2').textContent = 'All Enrollments';
+            }
+            applyFilters();
+        });
+        document.getElementById('filter-course').addEventListener('change', function() {
+            const courseId = this.value;
+            // Hide all other filter info banners first
+            document.getElementById('student-filter-info').classList.add('hidden');
+            document.getElementById('instructor-filter-info').classList.add('hidden');
+            
+            if (courseId) {
+                showCourseFilterInfo(courseId);
+                // Update page title
+                setTimeout(() => {
+                    const courseName = getCourseName(courseId);
+                    document.querySelector('h2').textContent = courseName ? `Enrollments for ${courseName}` : `Enrollments for Course ID: ${courseId}`;
+                }, 100);
+            } else {
+                document.getElementById('course-filter-info').classList.add('hidden');
+                document.querySelector('h2').textContent = 'All Enrollments';
+            }
+            applyFilters();
+        });
+
+        // Get URL parameters
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDropdownData();
+            loadEnrollments();
+            
+            // Set default date to now
+            const now = new Date();
+            document.getElementById('enrollment-date').value = now.toISOString().slice(0, 16);
+            
+            // Check URL parameters for filtering
+            const studentId = getURLParameter('studentId');
+            const instructorId = getURLParameter('instructorId');
+            const courseId = getURLParameter('courseId');
+            
+            if (studentId || instructorId || courseId) {
+                console.log('URL Parameters:', { studentId, instructorId, courseId });
+                // Wait for data to load, then apply filter
+                setTimeout(() => {
+                    if (studentId) {
+                        // Pre-select the student in the dropdown
+                        document.getElementById('enrollment-student').value = studentId;
+                        // Pre-select the student in the filter
+                        document.getElementById('filter-student').value = studentId;
+                        // Show the filter info banner
+                        showStudentFilterInfo(studentId);
+                        // Update page title
+                        const studentName = getStudentName(studentId);
+                        document.querySelector('h2').textContent = studentName ? `Enrollments for ${studentName}` : `Enrollments for Student ID: ${studentId}`;
+                    } else if (instructorId) {
+                        // Store instructor ID for special filtering
+                        window.currentInstructorFilter = instructorId;
+                        // Show the filter info banner
+                        showInstructorFilterInfo(instructorId);
+                        // Update page title
+                        const instructorName = getInstructorName(instructorId);
+                        document.querySelector('h2').textContent = instructorName ? `Enrollments taught by ${instructorName}` : `Enrollments by Instructor ID: ${instructorId}`;
+                    } else if (courseId) {
+                        // Pre-select the course in the filter
+                        document.getElementById('filter-course').value = courseId;
+                        // Show the filter info banner
+                        showCourseFilterInfo(courseId);
+                        // Update page title
+                        const courseName = getCourseName(courseId);
+                        document.querySelector('h2').textContent = courseName ? `Enrollments for ${courseName}` : `Enrollments for Course ID: ${courseId}`;
+                    }
+                    
+                    // Apply the filter
+                    applyFilters();
+                }, 500); // Wait for dropdowns to be populated
+            }
+            
+            // Clear filter button functionality
+            document.getElementById('clear-student-filter').addEventListener('click', clearAllFilters);
+            document.getElementById('clear-instructor-filter').addEventListener('click', clearAllFilters);
+            document.getElementById('clear-course-filter').addEventListener('click', clearAllFilters);
+        });
+
+        // Clear all filters function
+        function clearAllFilters() {
+            // Clear special instructor filter
+            window.currentInstructorFilter = null;
+            
+            // Clear all filter dropdowns
+            document.getElementById('filter-student').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-course').value = '';
+            
+            // Hide all filter info banners
+            document.getElementById('student-filter-info').classList.add('hidden');
+            document.getElementById('instructor-filter-info').classList.add('hidden');
+            document.getElementById('course-filter-info').classList.add('hidden');
+            
+            // Reset page title
+            document.querySelector('h2').textContent = 'All Enrollments';
+            document.title = 'Enrollment Management - EduTech';
+            
+            // Clear form selections
+            document.getElementById('enrollment-student').value = '';
+            document.getElementById('enrollment-course').value = '';
+            
+            // Reload all enrollments
+            applyFilters();
+        }
+
+        // Helper function to get student name by ID
+        function getStudentName(studentId) {
+            const studentSelect = document.getElementById('enrollment-student');
+            const option = studentSelect.querySelector(`option[value="${studentId}"]`);
+            return option ? option.textContent : null;
+        }
+
+        // Show student filter information
+        function showStudentFilterInfo(studentId) {
+            const studentName = getStudentName(studentId);
+            const displayName = studentName || `Student ID: ${studentId}`;
+            
+            document.getElementById('student-filter-name').textContent = `Showing enrollments for ${displayName}`;
+            document.getElementById('student-filter-info').classList.remove('hidden');
+        }
+
+        // Show instructor filter information
+        function showInstructorFilterInfo(instructorId) {
+            const instructorName = getInstructorName(instructorId);
+            const displayName = instructorName || `Instructor ID: ${instructorId}`;
+            
+            document.getElementById('instructor-filter-name').textContent = `Showing enrollments taught by ${displayName}`;
+            document.getElementById('instructor-filter-info').classList.remove('hidden');
+        }
+
+        // Show course filter information
+        function showCourseFilterInfo(courseId) {
+            const courseName = getCourseName(courseId);
+            const displayName = courseName || `Course ID: ${courseId}`;
+            
+            document.getElementById('course-filter-name').textContent = `Showing enrollments for ${displayName}`;
+            document.getElementById('course-filter-info').classList.remove('hidden');
+        }
+
+        // Helper function to get instructor name by ID
+        function getInstructorName(instructorId) {
+            // Get instructor name from courses data (since instructors are attached to courses)
+            const coursesWithInstructor = courses.filter(c => c.instructor && c.instructor.userId == instructorId);
+            if (coursesWithInstructor.length > 0) {
+                return coursesWithInstructor[0].instructor.name;
+            }
+            return null;
+        }
+
+        // Helper function to get course name by ID
+        function getCourseName(courseId) {
+            const courseSelect = document.getElementById('enrollment-course');
+            const option = courseSelect.querySelector(`option[value="${courseId}"]`);
+            return option ? option.textContent : null;
+        }
+
+
+    </script>
+</body>
+</html>

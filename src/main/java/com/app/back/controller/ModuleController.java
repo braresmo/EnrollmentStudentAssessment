@@ -19,7 +19,6 @@ public class ModuleController {
     @Autowired
     private ModuleService moduleService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<Module>> listar() {
         try {
@@ -29,7 +28,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Module> save(@RequestBody Module module) {
@@ -42,7 +40,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<Module>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Module> update(@RequestBody Module module) {
@@ -72,7 +68,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByTitle/{title}")
     public ResponseEntity<List<Module>> findByTitle(@PathVariable String title) {
         try {
@@ -82,7 +77,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByCourseId/{courseId}")
     public ResponseEntity<List<Module>> findByCourseId(@PathVariable Integer courseId) {
         try {
@@ -93,7 +87,6 @@ public class ModuleController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/updateWithCourseId/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Module> updateWithCourseId(@RequestBody Module module, @PathVariable Integer courseId) {

@@ -19,7 +19,6 @@ public class EnrollmentController {
     @Autowired
     private EnrollmentService enrollmentService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<Enrollment>> listar() {
         try {
@@ -29,7 +28,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Enrollment> save(@RequestBody Enrollment enrollment) {
@@ -42,7 +40,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<Enrollment>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Enrollment> update(@RequestBody Enrollment enrollment) {
@@ -72,7 +68,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByStatus/{status}")
     public ResponseEntity<List<Enrollment>> findByStatus(@PathVariable String status) {
         try {
@@ -82,7 +77,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByStudentId/{userId}")
     public ResponseEntity<List<Enrollment>> findByStudentId(@PathVariable Integer userId) {
         try {
@@ -94,7 +88,6 @@ public class EnrollmentController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByCourseId/{courseId}")
     public ResponseEntity<List<Enrollment>> findByCourseId(@PathVariable Integer courseId) {
         try {

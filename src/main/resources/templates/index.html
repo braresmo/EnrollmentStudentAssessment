@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTech Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .card-hover { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex items-center justify-between">
+                <div class="text-xl font-bold text-indigo-600">
+                    🎓 EduTech Management System
+                </div>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                    <!-- Show menu items based on authentication and role -->
+                    <div th:if="${loggedIn}">
+                        <a href="/courses" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
+                        <!-- Only show Students to Admins and Instructors -->
+                        <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                           href="/students" class="text-gray-700 hover:text-indigo-600 font-medium ml-6">Students</a>
+                        <!-- Only show Instructors to Admins -->
+                        <a th:if="${userRole == 'ADMIN'}" 
+                           href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium ml-6">Instructors</a>
+                        <!-- Only show Users to Admins -->
+                        <a th:if="${userRole == 'ADMIN'}" 
+                           href="/users" class="text-gray-700 hover:text-indigo-600 font-medium ml-6">Users</a>
+                        <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium ml-6">Enrollments</a>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
+                        <!-- User greeting -->
+                        <div th:if="${loggedIn}" class="text-sm text-gray-600">
+                            <span class="text-indigo-600 font-medium" th:text="'Hello, ' + ${userName}">Hello, User</span>
+                            <span class="text-xs text-gray-500 ml-2" th:text="'(' + ${userRole} + ')'">(ROLE)</span>
+                        </div>
+                        
+                        <!-- Login/Logout buttons -->
+                        <a th:if="${!loggedIn}" href="/login" class="text-indigo-600 hover:text-indigo-800 font-medium">Login</a>
+                        <button th:if="${loggedIn}" onclick="logout()" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Welcome Message -->
+        <div class="text-center mb-12">
+            <div th:if="${loggedIn}">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                    Welcome back, <span th:text="${userName}" class="text-indigo-600">User</span>!
+                </h1>
+                <p class="text-xl text-gray-600" th:text="'Your role: ' + ${userRole}">Your role: Role</p>
+                <p class="text-lg text-gray-500 mt-2">Here's your personalized dashboard</p>
+            </div>
+            <div th:if="${!loggedIn}">
+                <h1 class="text-4xl font-bold text-gray-800 mb-4">Welcome to EduTech</h1>
+                <p class="text-xl text-gray-600">Comprehensive Student Enrollment and Assessment Management</p>
+                <div class="mt-6">
+                    <a href="/login" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors">
+                        Login to Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards - Only show when logged in -->
+        <div th:if="${loggedIn}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-blue-500 text-white rounded-full p-3 mr-4">
+                        📚
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Total Courses</p>
+                        <p class="text-2xl font-bold" id="total-courses">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Show Students card only to Admins and Instructors -->
+            <div th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-green-500 text-white rounded-full p-3 mr-4">
+                        👨‍🎓
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Students</p>
+                        <p class="text-2xl font-bold" id="total-students">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Show Instructors card only to Admins -->
+            <div th:if="${userRole == 'ADMIN'}" class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-purple-500 text-white rounded-full p-3 mr-4">
+                        👨‍🏫
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Instructors</p>
+                        <p class="text-2xl font-bold" id="total-instructors">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                <div class="flex items-center">
+                    <div class="bg-yellow-500 text-white rounded-full p-3 mr-4">
+                        📝
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Enrollments</p>
+                        <p class="text-2xl font-bold" id="total-enrollments">--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions - Only show when logged in -->
+        <div th:if="${loggedIn}" class="bg-white rounded-lg shadow-md p-8 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- Course actions for all users -->
+                <a href="/courses" class="bg-blue-50 border border-blue-200 rounded-lg p-4 hover:bg-blue-100 transition-colors">
+                    <h3 class="font-semibold text-blue-800">View Courses</h3>
+                    <p class="text-sm text-blue-600" th:switch="${userRole}">
+                        <span th:case="'ADMIN'">Manage all courses</span>
+                        <span th:case="'INSTRUCTOR'">View your courses</span>
+                        <span th:case="'STUDENT'">View your enrolled courses</span>
+                    </p>
+                </a>
+
+                <!-- Student management for Admins and Instructors -->
+                <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                   href="/students" class="bg-green-50 border border-green-200 rounded-lg p-4 hover:bg-green-100 transition-colors">
+                    <h3 class="font-semibold text-green-800">Manage Students</h3>
+                    <p class="text-sm text-green-600">View and manage student information</p>
+                </a>
+
+                <!-- Instructor management for Admins only -->
+                <a th:if="${userRole == 'ADMIN'}" 
+                   href="/instructors" class="bg-purple-50 border border-purple-200 rounded-lg p-4 hover:bg-purple-100 transition-colors">
+                    <h3 class="font-semibold text-purple-800">Manage Instructors</h3>
+                    <p class="text-sm text-purple-600">View and manage instructor information</p>
+                </a>
+
+                <!-- User management for Admins only -->
+                <a th:if="${userRole == 'ADMIN'}" 
+                   href="/users" class="bg-red-50 border border-red-200 rounded-lg p-4 hover:bg-red-100 transition-colors">
+                    <h3 class="font-semibold text-red-800">Manage Users</h3>
+                    <p class="text-sm text-red-600">View and manage all system users</p>
+                </a>
+
+                <!-- Enrollments for all users -->
+                <a href="/enrollments" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 hover:bg-yellow-100 transition-colors">
+                    <h3 class="font-semibold text-yellow-800">Enrollments</h3>
+                    <p class="text-sm text-yellow-600" th:switch="${userRole}">
+                        <span th:case="'ADMIN'">Manage all enrollments</span>
+                        <span th:case="'INSTRUCTOR'">View course enrollments</span>
+                        <span th:case="'STUDENT'">View your enrollments</span>
+                    </p>
+                </a>
+            </div>
+        </div>
+
+        <!-- Features Overview - Show when not logged in -->
+        <div th:if="${!loggedIn}" class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="bg-white rounded-lg shadow-md p-8 text-center card-hover">
+                <div class="text-4xl mb-4">📚</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Course Management</h3>
+                <p class="text-gray-600">Efficiently manage courses, modules, and content</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-8 text-center card-hover">
+                <div class="text-4xl mb-4">👥</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Student Enrollment</h3>
+                <p class="text-gray-600">Streamlined enrollment and student management</p>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-8 text-center card-hover">
+                <div class="text-4xl mb-4">📊</div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Assessment Tracking</h3>
+                <p class="text-gray-600">Monitor progress and track assessments</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for dynamic functionality -->
+    <script>
+        // Logout function
+        function logout() {
+            fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            });
+        }
+
+        // Load statistics when logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if stats elements exist (which means user is logged in)
+            const coursesElement = document.getElementById('total-courses');
+            const enrollmentsElement = document.getElementById('total-enrollments');
+            
+            if (coursesElement && enrollmentsElement) {
+                // Get role from Thymeleaf, with fallback
+                const userRole = /*[[${userRole}]]*/ 'USER';
+                console.log('Loading dashboard stats for role:', userRole);
+                
+                // Load stats immediately
+                loadDashboardStats(userRole);
+            } else {
+                console.log('Stats elements not found, user likely not logged in');
+            }
+        });
+
+        function loadDashboardStats(userRole) {
+            console.log('Starting loadDashboardStats with role:', userRole);
+            
+            // Load courses - all roles use the same endpoint for now
+            console.log('Fetching courses...');
+            fetch('/course/getAll', {credentials: 'same-origin'})
+                .then(response => {
+                    console.log('Courses response:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Failed to load courses: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Courses data:', data);
+                    const element = document.getElementById('total-courses');
+                    if (element) {
+                        element.textContent = data.length || 0;
+                        console.log('Set courses count to:', data.length || 0);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading courses:', error);
+                    const element = document.getElementById('total-courses');
+                    if (element) element.textContent = '0';
+                });
+
+            // Load students (for all roles temporarily - for debugging)
+            console.log('Fetching students...');
+            fetch('/student/getAll', {
+                credentials: 'same-origin',
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Students response:', response.status);
+                if (!response.ok) {
+                    throw new Error('Failed to load students: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Students data:', data);
+                const element = document.getElementById('total-students');
+                if (element) {
+                    // Make sure data is an array
+                    const count = Array.isArray(data) ? data.length : 0;
+                    element.textContent = count;
+                    console.log('Set students count to:', count);
+                } else {
+                    console.log('Students element not found in DOM');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading students:', error);
+                const element = document.getElementById('total-students');
+                if (element) element.textContent = '0';
+            });
+
+            // Load instructors (for all roles temporarily - for debugging)
+            console.log('Fetching instructors...');
+            fetch('/instructor/getAll', {credentials: 'same-origin'})
+                .then(response => {
+                    console.log('Instructors response:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Failed to load instructors: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Instructors data:', data);
+                    const element = document.getElementById('total-instructors');
+                    if (element) {
+                        element.textContent = data.length || 0;
+                        console.log('Set instructors count to:', data.length || 0);
+                    } else {
+                        console.log('Instructors element not found in DOM');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading instructors:', error);
+                    const element = document.getElementById('total-instructors');
+                    if (element) element.textContent = '0';
+                });
+
+            // Load enrollments
+            console.log('Fetching enrollments...');
+            fetch('/enrollment/getAll', {credentials: 'same-origin'})
+                .then(response => {
+                    console.log('Enrollments response:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Failed to load enrollments: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Enrollments data:', data);
+                    const element = document.getElementById('total-enrollments');
+                    if (element) {
+                        element.textContent = data.length || 0;
+                        console.log('Set enrollments count to:', data.length || 0);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading enrollments:', error);
+                    const element = document.getElementById('total-enrollments');
+                    if (element) element.textContent = '0';
+                });
+        }
+    </script>
+</body>
+</html>

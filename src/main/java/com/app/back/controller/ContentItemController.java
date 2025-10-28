@@ -19,7 +19,6 @@ public class ContentItemController {
     @Autowired
     private ContentItemService contentItemService;
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/getAll")
     public ResponseEntity<List<ContentItem>> listar() {
         try {
@@ -29,7 +28,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ContentItem> save(@RequestBody ContentItem contentItem) {
@@ -42,7 +40,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping(value = "/delete/{id}")
     public ResponseEntity<List<ContentItem>> delete(@PathVariable Integer id) {
@@ -59,7 +56,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ContentItem> update(@RequestBody ContentItem contentItem) {
@@ -72,7 +68,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByType/{type}")
     public ResponseEntity<List<ContentItem>> findByType(@PathVariable String type) {
         try {
@@ -82,7 +77,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByTitle/{title}")
     public ResponseEntity<List<ContentItem>> findByTitle(@PathVariable String title) {
         try {
@@ -92,7 +86,6 @@ public class ContentItemController {
         }
     }
 
-    @CrossOrigin(origins = "*")
     @GetMapping(path = "/findByModuleId/{moduleId}")
     public ResponseEntity<List<ContentItem>> findByModuleId(@PathVariable Integer moduleId) {
         try {
@@ -103,7 +96,6 @@ public class ContentItemController {
         }
     }
     
-    @CrossOrigin(origins = "*")
     @PostMapping(path = "/saveWithModuleId/{moduleId}")
     public ResponseEntity<ContentItem> saveWithModuleId(@PathVariable Integer moduleId, @RequestBody ContentItem contentItem) {
         try {
