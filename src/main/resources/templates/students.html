@@ -128,10 +128,6 @@
 
                 <!-- Actions (Admin only) -->
                 <div th:if="${userRole == 'ADMIN'}" class="flex gap-2">
-                    <button onclick="exportStudents()" 
-                            class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                        📊 Export
-                    </button>
                     <button onclick="showAddStudentModal()" 
                             class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors">
                         + Add Student
@@ -628,10 +624,6 @@
                     showError('Failed to delete student: ' + error.message);
                 }
             }
-        }
-
-        function exportStudents() {
-            alert('Export students - Feature coming soon!');
         }
 
         // Utility functions
