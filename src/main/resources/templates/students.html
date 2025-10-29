@@ -259,11 +259,13 @@
         
         let allStudents = [];
         let allCourses = [];
+        let allEnrollments = []; // Added to store all enrollments with course data
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadStudents();
             loadCourses();
+            loadEnrollments(); // Load enrollments with course information
             setupEventListeners();
         });
 
@@ -307,6 +309,18 @@
             }
         }
 
+        async function loadEnrollments() {
+            try {
+                const response = await fetch('/enrollment/getAll', { credentials: 'same-origin' });
+                if (response.ok) {
+                    allEnrollments = await response.json();
+                    console.log('Loaded enrollments:', allEnrollments);
+                }
+            } catch (error) {
+                console.error('Error loading enrollments:', error);
+            }
+        }
+
         function getStudentsEndpoint() {
             // For now, all roles use the same endpoint
             // TODO: In the future, implement role-based filtering on the backend
@@ -315,10 +329,13 @@
 
         function populateCourseFilter() {
             const select = document.getElementById('course-filter');
+            console.log('Populating course filter with courses:', allCourses);
             allCourses.forEach(course => {
+                console.log('Course object:', course);
                 const option = document.createElement('option');
-                option.value = course.idCourse;
-                option.textContent = course.title || `Course ${course.idCourse}`;
+                // Use courseId if available, otherwise idCourse
+                option.value = course.courseId || course.idCourse;
+                option.textContent = course.title || `Course ${course.courseId || course.idCourse}`;
                 select.appendChild(option);
             });
         }
@@ -431,6 +448,8 @@
             const statusFilter = document.getElementById('status-filter').value;
             const courseFilter = document.getElementById('course-filter').value;
 
+            console.log('Filtering students with courseFilter:', courseFilter);
+
             const filtered = allStudents.filter(student => {
                 const matchesSearch = !searchTerm || 
                     (student.name && student.name.toLowerCase().includes(searchTerm)) ||
@@ -441,9 +460,22 @@
                     (statusFilter === 'ACTIVE' && student.isActive) ||
                     (statusFilter === 'INACTIVE' && !student.isActive);
                 
-                // For now, ignore course filter since we'd need to check enrollments
-                // TODO: Implement course filtering when needed
-                const matchesCourse = !courseFilter;
+                // Check if student is enrolled in the selected course using separate enrollments data
+                let matchesCourse = !courseFilter;
+                if (courseFilter) {
+                    // Find enrollments for this student in the separate enrollments array
+                    const studentEnrollments = allEnrollments.filter(enrollment => 
+                        enrollment.student && enrollment.student.userId === student.userId
+                    );
+                    
+                    console.log(`Student ${student.name} enrollments from separate data:`, studentEnrollments);
+                    
+                    matchesCourse = studentEnrollments.some(enrollment => {
+                        const courseId = enrollment.course ? (enrollment.course.courseId || enrollment.course.idCourse) : null;
+                        console.log('Comparing course IDs:', courseId, 'vs', courseFilter);
+                        return courseId == courseFilter;
+                    });
+                }
 
                 return matchesSearch && matchesStatus && matchesCourse;
             });
