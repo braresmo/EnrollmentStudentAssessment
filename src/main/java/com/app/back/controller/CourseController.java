@@ -24,7 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
 import com.app.back.core.impl.CourseService;
+import com.app.back.core.impl.InstructorService;
+import com.app.back.dto.CourseCreateDTO;
+import com.app.back.dto.CourseUpdateDTO;
 import com.app.back.model.Course;
+import com.app.back.model.Instructor;
 import com.app.back.util.SessionManager;
 
 import jakarta.servlet.http.HttpSession;
@@ -38,6 +42,9 @@ public class CourseController {
 
 	@Autowired
 	private CourseService courseService;
+	
+	@Autowired
+	private InstructorService instructorService;
 	
 	
 	@GetMapping(path = "/getAll")
@@ -54,8 +61,22 @@ public class CourseController {
 	
 	@ResponseStatus(HttpStatus.OK)
 	@PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Course> save(@RequestBody Course course) {
+	public ResponseEntity<Course> save(@RequestBody CourseCreateDTO courseDTO) {
 		try {
+			// Create Course entity from DTO
+			Course course = new Course();
+			course.setCode(courseDTO.getCode());
+			course.setTitle(courseDTO.getTitle());
+			course.setStatus(courseDTO.getStatus());
+			course.setPublishedAt(courseDTO.getPublishedAt());
+			course.setIdTenant(courseDTO.getTenantId());
+			
+			// Find and set the instructor
+			Optional<Instructor> instructor = instructorService.findById(courseDTO.getInstructorId());
+			if (instructor.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			}
+			course.setInstructor(instructor.get());
 			
 			return ResponseEntity.ok(courseService.save(course));
 		} catch (InternalServerError e) {
@@ -85,9 +106,31 @@ public class CourseController {
 	
 	@ResponseStatus(HttpStatus.OK)
 	@PutMapping(value = "/update", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Course> update(@RequestBody Course course) {
+	public ResponseEntity<Course> update(@RequestBody CourseUpdateDTO courseDTO) {
 		try {
-			//course.setFechaModificacion(new Date());
+			// Find existing course
+			Optional<Course> existingCourse = courseService.findById(courseDTO.getIdCourse());
+			if (existingCourse.isEmpty()) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+			
+			// Update course fields
+			Course course = existingCourse.get();
+			course.setCode(courseDTO.getCode());
+			course.setTitle(courseDTO.getTitle());
+			course.setStatus(courseDTO.getStatus());
+			course.setPublishedAt(courseDTO.getPublishedAt());
+			course.setIdTenant(courseDTO.getTenantId());
+			
+			// Update instructor if provided and different
+			if (courseDTO.getInstructorId() != null) {
+				Optional<Instructor> instructor = instructorService.findById(courseDTO.getInstructorId());
+				if (instructor.isEmpty()) {
+					return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+				}
+				course.setInstructor(instructor.get());
+			}
+			
 			return ResponseEntity.ok(courseService.save(course));
 
 		} catch (IllegalArgumentException e) {

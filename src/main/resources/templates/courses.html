@@ -78,7 +78,6 @@
                         <option value="">All Status</option>
                         <option value="ACTIVE">Active</option>
                         <option value="DRAFT">Draft</option>
-                        <option value="ARCHIVED">Archived</option>
                     </select>
                 </div>
 
@@ -120,12 +119,13 @@
         </div>
     </div>
 
-    <!-- Add Course Modal (Admin and Instructor only) -->
-    <div id="add-course-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <!-- Course Modal (Add/Edit) -->
+    <div id="course-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Course</h2>
+            <h2 id="course-modal-title" class="text-2xl font-bold text-gray-800 mb-6">Add New Course</h2>
             
-            <form id="add-course-form" class="space-y-4">
+            <form id="course-form" class="space-y-4">
+                <input type="hidden" id="course-id" name="idCourse">
                 <div>
                     <label for="course-title" class="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
                     <input type="text" id="course-title" name="title" required
@@ -148,11 +148,11 @@
                 </div>
 
                 <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="hideAddCourseModal()" 
+                    <button type="button" onclick="hideCourseModal()" 
                             class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button type="submit" 
+                    <button type="submit" id="course-submit-btn"
                             class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                         Create Course
                     </button>
@@ -177,8 +177,8 @@
             document.getElementById('search-input').addEventListener('input', filterCourses);
             document.getElementById('status-filter').addEventListener('change', filterCourses);
 
-            // Add course form
-            document.getElementById('add-course-form').addEventListener('submit', handleAddCourse);
+            // Course form (both add and edit)
+            document.getElementById('course-form').addEventListener('submit', handleCourseForm);
         }
 
         async function loadCourses() {
@@ -287,18 +287,50 @@
 
         // Modal functions
         function showAddCourseModal() {
-            document.getElementById('add-course-modal').classList.remove('hidden');
+            document.getElementById('course-modal-title').textContent = 'Add New Course';
+            document.getElementById('course-submit-btn').textContent = 'Create Course';
+            document.getElementById('course-form').reset();
+            document.getElementById('course-id').value = '';
+            // Enable course code field for new courses
+            const courseCodeField = document.getElementById('course-code');
+            courseCodeField.readOnly = false;
+            courseCodeField.classList.remove('bg-gray-100');
+            courseCodeField.classList.add('bg-white');
+            document.getElementById('course-modal').classList.remove('hidden');
         }
 
-        function hideAddCourseModal() {
-            document.getElementById('add-course-modal').classList.add('hidden');
-            document.getElementById('add-course-form').reset();
+        function showEditCourseModal(course) {
+            document.getElementById('course-modal-title').textContent = 'Edit Course';
+            document.getElementById('course-submit-btn').textContent = 'Update Course';
+            document.getElementById('course-id').value = course.idCourse;
+            document.getElementById('course-title').value = course.title;
+            document.getElementById('course-code').value = course.code;
+            document.getElementById('course-status').value = course.status;
+            // Make course code field readonly for editing
+            const courseCodeField = document.getElementById('course-code');
+            courseCodeField.readOnly = true;
+            courseCodeField.classList.remove('bg-white');
+            courseCodeField.classList.add('bg-gray-100');
+            document.getElementById('course-modal').classList.remove('hidden');
         }
 
-        async function handleAddCourse(event) {
+        function hideCourseModal() {
+            document.getElementById('course-modal').classList.add('hidden');
+            document.getElementById('course-form').reset();
+            // Reset course code field state
+            const courseCodeField = document.getElementById('course-code');
+            courseCodeField.readOnly = false;
+            courseCodeField.classList.remove('bg-gray-100');
+            courseCodeField.classList.add('bg-white');
+        }
+
+        async function handleCourseForm(event) {
             event.preventDefault();
             
             const formData = new FormData(event.target);
+            const courseId = formData.get('idCourse');
+            const isEdit = courseId && courseId !== '';
+            
             const courseData = {
                 title: formData.get('title'),
                 code: formData.get('code'),
@@ -308,9 +340,16 @@
                 tenantId: 1
             };
 
+            if (isEdit) {
+                courseData.idCourse = parseInt(courseId);
+            }
+
             try {
-                const response = await fetch('/course/save', {
-                    method: 'POST',
+                const url = isEdit ? '/course/update' : '/course/save';
+                const method = isEdit ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -319,15 +358,15 @@
                 });
 
                 if (response.ok) {
-                    hideAddCourseModal();
+                    hideCourseModal();
                     loadCourses(); // Reload courses
-                    showSuccess('Course created successfully!');
+                    showSuccess(isEdit ? 'Course updated successfully!' : 'Course created successfully!');
                 } else {
-                    throw new Error('Failed to create course');
+                    throw new Error(isEdit ? 'Failed to update course' : 'Failed to create course');
                 }
             } catch (error) {
-                console.error('Error creating course:', error);
-                showError('Failed to create course. Please try again.');
+                console.error('Error with course:', error);
+                showError(isEdit ? 'Failed to update course. Please try again.' : 'Failed to create course. Please try again.');
             }
         }
 
@@ -339,9 +378,13 @@
         }
 
         function editCourse(courseId) {
-            // Navigate to course edit (implement as needed)
-            console.log('Edit course:', courseId);
-            alert(`Edit course ID: ${courseId} - Feature coming soon!`);
+            // Find the course in allCourses array
+            const course = allCourses.find(c => c.idCourse === courseId);
+            if (course) {
+                showEditCourseModal(course);
+            } else {
+                showError('Course not found');
+            }
         }
 
         // Utility functions
