@@ -58,6 +58,20 @@ public class CourseController {
 		}
 
 	}
+
+	@GetMapping(path = "/getById/{id}")
+	public ResponseEntity<Course> getById(@PathVariable Integer id) {
+		try {
+			Optional<Course> course = courseService.findById(id);
+			if (course.isPresent()) {
+				return ResponseEntity.ok(course.get());
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (IllegalArgumentException e) {
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 	
 	@ResponseStatus(HttpStatus.OK)
 	@PostMapping(value = "/save", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)

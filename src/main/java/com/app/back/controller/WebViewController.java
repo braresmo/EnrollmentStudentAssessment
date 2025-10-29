@@ -131,4 +131,16 @@ public class WebViewController {
         model.addAttribute("userRole", getPrimaryRole(userInfo.getRoles()));
         return "enrollments";
     }
+
+    @GetMapping("/course-modules")
+    public String courseModules(HttpSession session, Model model) {
+        if (!sessionManager.isUserAuthenticated(session)) {
+            return "redirect:/login";
+        }
+        
+        LoginResponse.UserInfo userInfo = sessionManager.getCurrentUserInfo(session);
+        model.addAttribute("userName", userInfo.getName());
+        model.addAttribute("userRole", getPrimaryRole(userInfo.getRoles()));
+        return "course-modules";
+    }
 }

@@ -87,6 +87,30 @@ public class ModuleController {
         }
     }
 
+    @GetMapping(path = "/getByCourse/{courseId}")
+    public ResponseEntity<List<Module>> getByCourse(@PathVariable Integer courseId) {
+        try {
+            List<Module> modules = moduleService.findByCourseId(courseId);
+            return ResponseEntity.ok(modules);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/getById/{id}")
+    public ResponseEntity<Module> getById(@PathVariable Integer id) {
+        try {
+            Optional<Module> module = moduleService.findById(id);
+            if (module.isPresent()) {
+                return ResponseEntity.ok(module.get());
+            } else {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/updateWithCourseId/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Module> updateWithCourseId(@RequestBody Module module, @PathVariable Integer courseId) {

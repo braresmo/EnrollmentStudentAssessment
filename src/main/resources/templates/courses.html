@@ -372,9 +372,8 @@
 
         // Course actions
         function viewCourse(courseId) {
-            // Navigate to course details (implement as needed)
-            console.log('View course:', courseId);
-            alert(`Course details for ID: ${courseId} - Feature coming soon!`);
+            // Navigate to course modules management
+            window.location.href = `/course-modules?courseId=${courseId}`;
         }
 
         function editCourse(courseId) {
