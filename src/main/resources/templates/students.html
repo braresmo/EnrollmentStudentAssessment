@@ -183,12 +183,15 @@
         </div>
     </div>
 
-    <!-- Add Student Modal (Admin only) -->
+    <!-- Add/Edit Student Modal (Admin only) -->
     <div id="add-student-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Add New Student</h2>
+            <h2 id="form-title" class="text-2xl font-bold text-gray-800 mb-6">Add New Student</h2>
             
             <form id="add-student-form" class="space-y-4">
+                <input type="hidden" id="student-id" name="userId">
+                <input type="hidden" id="student-number" name="studentNumber">
+                
                 <div>
                     <label for="student-first-name" class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                     <input type="text" id="student-first-name" name="firstName" required
@@ -204,13 +207,29 @@
                 <div>
                     <label for="student-email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <input type="email" id="student-email" name="email" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="student@example.com">
+                </div>
+
+                <div id="password-field">
+                    <label for="student-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" id="student-password" name="password"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="Enter password">
+                </div>
+
+                <div>
+                    <label for="student-cohort" class="block text-sm font-medium text-gray-700 mb-2">Cohort</label>
+                    <input type="text" id="student-cohort" name="cohort" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="2025" value="2025">
                 </div>
 
                 <div>
                     <label for="student-phone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
                     <input type="tel" id="student-phone" name="phone"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                           placeholder="123-456-7890">
                 </div>
 
                 <div class="flex gap-4 pt-4">
@@ -218,7 +237,7 @@
                             class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
                         Cancel
                     </button>
-                    <button type="submit" 
+                    <button type="submit" id="submit-btn"
                             class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
                         Add Student
                     </button>
@@ -228,8 +247,20 @@
     </div>
 
     <!-- JavaScript -->
+    <script th:inline="javascript">
+        // Set global variables from Thymeleaf
+        window.APP_USER_ROLE = /*[[${userRole}]]*/ 'USER';
+        window.APP_USER_NAME = /*[[${userName}]]*/ 'User';
+    </script>
+    
     <script>
-        const userRole = /*[[${userRole}]]*/ '';
+        /*<![CDATA[*/
+        const userRole = window.APP_USER_ROLE;
+        const userName = window.APP_USER_NAME;
+        console.log('Students page - userRole from window:', userRole);
+        console.log('Students page - userName from window:', userName);
+        /*]]>*/
+        
         let allStudents = [];
         let allCourses = [];
 
@@ -387,11 +418,9 @@
                     
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex space-x-2">
-                            <button onclick="viewStudent(${student.userId})" 
-                                    class="text-indigo-600 hover:text-indigo-900">View</button>
-                            ${userRole === 'ADMIN' ? `
+                            ${(userRole === 'ADMIN' || userRole === 'INSTRUCTOR') ? `
                                 <button onclick="editStudent(${student.userId})" 
-                                        class="text-gray-600 hover:text-gray-900">Edit</button>
+                                        class="text-indigo-600 hover:text-indigo-900">Edit</button>
                                 <button onclick="deleteStudent(${student.userId})" 
                                         class="text-red-600 hover:text-red-900">Delete</button>
                             ` : ''}
@@ -428,6 +457,22 @@
 
         // Modal functions
         function showAddStudentModal() {
+            // Reset form for new student
+            document.getElementById('add-student-form').reset();
+            document.getElementById('student-id').value = '';
+            document.getElementById('student-number').value = '';
+            
+            // Reset password field requirements
+            document.getElementById('student-password').required = true;
+            document.getElementById('password-field').querySelector('label').textContent = 'Password';
+
+            // Update modal title and button text
+            document.getElementById('form-title').textContent = 'Add New Student';
+            document.getElementById('submit-btn').textContent = 'Add Student';
+
+            // Set default cohort to current year
+            document.getElementById('student-cohort').value = new Date().getFullYear().toString();
+            
             document.getElementById('add-student-modal').classList.remove('hidden');
         }
 
@@ -440,16 +485,57 @@
             event.preventDefault();
             
             const formData = new FormData(event.target);
+            
+            // Get values explicitly
+            const userId = formData.get('userId');
+            const studentNumber = formData.get('studentNumber');
+            const firstName = formData.get('firstName');
+            const lastName = formData.get('lastName');
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const cohort = formData.get('cohort') || new Date().getFullYear().toString();
+            const phone = formData.get('phone');
+            
+            const isEditing = userId && userId.trim() !== '';
+            
+            // Validate required fields (password is required only for new students)
+            if (!firstName || !lastName || !email || !cohort || (!isEditing && !password)) {
+                showError('Please fill in all required fields');
+                return;
+            }
+            
+            // Create student data matching the entity structure
             const studentData = {
-                name: `${formData.get('firstName')} ${formData.get('lastName')}`,
-                email: formData.get('email'),
-                passwordHash: '$2a$10$defaultpassword', // Default password, should be changed
-                isActive: true,
+                // User fields (inherited)
                 tenantId: 1,
-                studentNumber: 'STU' + Date.now(), // Generate unique student number
-                cohort: new Date().getFullYear().toString(), // Current year as cohort
-                roles: [{ name: 'STUDENT' }]
+                name: `${firstName} ${lastName}`,
+                email: email,
+                active: true,
+                
+                // Student specific fields
+                cohort: cohort
             };
+
+            // Add userId and studentNumber for editing
+            if (isEditing) {
+                studentData.userId = parseInt(userId);
+                studentData.studentNumber = studentNumber; // Use from form
+                
+                // For editing, preserve existing student data
+                const existingStudent = allStudents.find(s => s.userId === parseInt(userId));
+                if (existingStudent && existingStudent.enrollments) {
+                    // Preserve enrollments if they exist
+                    studentData.enrollments = existingStudent.enrollments;
+                }
+            } else {
+                // Generate unique student number for new students
+                studentData.studentNumber = 'STU' + Date.now();
+            }
+
+            // Add password only if provided (required for new, optional for edit)
+            if (password && password.trim() !== '') {
+                studentData.password = password;
+            }
 
             try {
                 const response = await fetch('/student/save', {
@@ -464,13 +550,14 @@
                 if (response.ok) {
                     hideAddStudentModal();
                     loadStudents(); // Reload students
-                    showSuccess('Student added successfully!');
+                    showSuccess(isEditing ? 'Student updated successfully!' : 'Student added successfully!');
                 } else {
-                    throw new Error('Failed to add student');
+                    const responseText = await response.text();
+                    throw new Error(`Failed to ${isEditing ? 'update' : 'add'} student: ${response.status} - ${responseText}`);
                 }
             } catch (error) {
-                console.error('Error adding student:', error);
-                showError('Failed to add student. Please try again.');
+                console.error(`Error ${isEditing ? 'updating' : 'adding'} student:`, error);
+                showError(`Failed to ${isEditing ? 'update' : 'add'} student: ` + error.message);
             }
         }
 
@@ -480,13 +567,66 @@
         }
 
         function editStudent(studentId) {
-            alert(`Edit student ID: ${studentId} - Feature coming soon!`);
+            console.log('Editing student with ID:', studentId);
+            
+            // Find the student in the allStudents array
+            const student = allStudents.find(s => s.userId === studentId);
+            
+            if (!student) {
+                showError('Student not found');
+                return;
+            }
+
+            // Split the name into first and last name
+            const nameParts = student.name.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            // Populate the form with student data
+            document.getElementById('student-id').value = student.userId;
+            document.getElementById('student-number').value = student.studentNumber || '';
+            document.getElementById('student-first-name').value = firstName;
+            document.getElementById('student-last-name').value = lastName;
+            document.getElementById('student-email').value = student.email;
+            document.getElementById('student-cohort').value = student.cohort || '2025';
+            document.getElementById('student-phone').value = student.phone || '';
+
+            // For editing, password is optional
+            document.getElementById('student-password').value = '';
+            document.getElementById('student-password').required = false;
+            document.getElementById('password-field').querySelector('label').textContent = 'Password (leave blank to keep current)';
+
+            // Update modal title and button text
+            document.getElementById('form-title').textContent = 'Edit Student';
+            document.getElementById('submit-btn').textContent = 'Update Student';
+
+            // Show the modal
+            document.getElementById('add-student-modal').classList.remove('hidden');
         }
 
-        function deleteStudent(studentId) {
-            if (confirm('Are you sure you want to delete this student?')) {
-                // Implement delete functionality
-                alert(`Delete student ID: ${studentId} - Feature coming soon!`);
+        async function deleteStudent(studentId) {
+            const student = allStudents.find(s => s.userId === studentId);
+            const studentName = student ? student.name : `ID ${studentId}`;
+            
+            if (confirm(`Are you sure you want to delete student "${studentName}"?\n\nThis action cannot be undone.`)) {
+                try {
+                    const response = await fetch(`/student/delete/${studentId}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        loadStudents(); // Reload students
+                        showSuccess(`Student "${studentName}" deleted successfully!`);
+                    } else {
+                        const responseText = await response.text();
+                        console.error('Server error response:', response.status, responseText);
+                        throw new Error(`Failed to delete student: ${response.status} - ${responseText}`);
+                    }
+                } catch (error) {
+                    console.error('Error deleting student:', error);
+                    showError('Failed to delete student: ' + error.message);
+                }
             }
         }
 

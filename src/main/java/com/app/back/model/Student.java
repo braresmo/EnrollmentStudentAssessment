@@ -20,7 +20,7 @@ import java.util.Set;
 @Entity
 @Table(name = "student")
 @PrimaryKeyJoinColumn(name = "user_id") // Links to the User table
-@JsonIgnoreProperties({"password", "hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Student extends User {
 
     @Column(name = "student_number", unique = true, nullable = false)
