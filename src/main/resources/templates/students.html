@@ -32,7 +32,8 @@
                        href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
                     <a th:if="${userRole == 'ADMIN'}" 
                        href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
-                    <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
                     
                     <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
                         <div class="text-sm text-gray-600">

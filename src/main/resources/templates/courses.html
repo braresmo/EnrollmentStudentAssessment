@@ -32,7 +32,8 @@
                        href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
                     <a th:if="${userRole == 'ADMIN'}" 
                        href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
-                    <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
                     
                     <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
                         <div class="text-sm text-gray-600">
@@ -162,8 +163,9 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
+    <script th:inline="javascript">
         const userRole = /*[[${userRole}]]*/ '';
+        const userId = /*[[${userId}]]*/ null;
         let allCourses = [];
 
         // Load courses on page load
@@ -183,25 +185,59 @@
 
         async function loadCourses() {
             try {
-                const endpoint = getCoursesEndpoint();
-                const response = await fetch(endpoint, { credentials: 'same-origin' });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load courses');
-                }
+                if (userRole === 'STUDENT') {
+                    await loadStudentCourses();
+                } else {
+                    const endpoint = getCoursesEndpoint();
+                    const response = await fetch(endpoint, { credentials: 'same-origin' });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to load courses');
+                    }
 
-                allCourses = await response.json();
-                displayCourses(allCourses);
+                    allCourses = await response.json();
+                    displayCourses(allCourses);
+                }
             } catch (error) {
                 console.error('Error loading courses:', error);
                 showError('Failed to load courses. Please try again.');
             }
         }
 
+        async function loadStudentCourses() {
+            try {
+                // Get all enrollments
+                const enrollmentsResponse = await fetch('/enrollment/getAll', { credentials: 'same-origin' });
+                if (!enrollmentsResponse.ok) {
+                    throw new Error('Failed to load enrollments');
+                }
+                
+                const allEnrollments = await enrollmentsResponse.json();
+                
+                // Filter enrollments for current student using userId
+                const studentEnrollments = allEnrollments.filter(enrollment => 
+                    enrollment.student && enrollment.student.userId === userId
+                );
+                
+                // Extract courses from enrollments
+                const studentCourses = studentEnrollments.map(enrollment => enrollment.course)
+                    .filter(course => course != null); // Remove null courses
+                
+                // Remove duplicates based on course ID
+                const uniqueCourses = studentCourses.filter((course, index, self) => 
+                    index === self.findIndex(c => c.idCourse === course.idCourse)
+                );
+                
+                allCourses = uniqueCourses;
+                displayCourses(allCourses);
+            } catch (error) {
+                console.error('Error loading student courses:', error);
+                showError('Failed to load your enrolled courses. Please try again.');
+            }
+        }
+
         function getCoursesEndpoint() {
             switch(userRole) {
-                case 'STUDENT':
-                    return '/enrollment/getAll'; // Will need to filter for current user
                 case 'INSTRUCTOR':
                     return '/course/my-courses';
                 default:

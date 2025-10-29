@@ -20,14 +20,27 @@
         <div class="container mx-auto px-6 py-3">
             <div class="flex items-center justify-between">
                 <div class="text-xl font-bold text-indigo-600">
-                    📖 Module & Content Management
+                    🎓 EduTech Management System
                 </div>
-                <div class="hidden md:flex space-x-6">
-                    <a href="/dashboard" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="text-gray-700 hover:text-indigo-600 font-medium">Dashboard</a>
                     <a href="/courses" class="text-gray-700 hover:text-indigo-600 font-medium">Courses</a>
-                    <a href="/students" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
-                    <a href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
-                    <a href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/students" class="text-gray-700 hover:text-indigo-600 font-medium">Students</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/instructors" class="text-gray-700 hover:text-indigo-600 font-medium">Instructors</a>
+                    <a th:if="${userRole == 'ADMIN'}" 
+                       href="/users" class="text-gray-700 hover:text-indigo-600 font-medium">Users</a>
+                    <a th:if="${userRole == 'ADMIN' or userRole == 'INSTRUCTOR'}" 
+                       href="/enrollments" class="text-gray-700 hover:text-indigo-600 font-medium">Enrollments</a>
+                    
+                    <div class="flex items-center space-x-4 ml-6 pl-6 border-l border-gray-200">
+                        <div class="text-sm text-gray-600">
+                            <span class="text-indigo-600 font-medium" th:text="'Hello, ' + ${userName}">Hello, User</span>
+                            <span class="text-xs text-gray-500 ml-2" th:text="'(' + ${userRole} + ')'">(ROLE)</span>
+                        </div>
+                        <button onclick="logout()" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -54,7 +67,7 @@
             <!-- Modules Section -->
             <div class="space-y-6">
                 <!-- Module Form -->
-                <div id="module-form-container" class="bg-white p-6 rounded-lg shadow-md">
+                <div id="module-form-container" class="bg-white p-6 rounded-lg shadow-md" th:style="${userRole == 'STUDENT'} ? 'display: none;' : ''">
                     <h3 id="module-form-title" class="text-xl font-semibold mb-4 text-gray-700">Add New Module</h3>
                     <form id="module-form" class="space-y-4">
                         <input type="hidden" id="module-id" name="moduleId">
@@ -93,7 +106,7 @@
             <!-- Content Items Section -->
             <div class="space-y-6">
                 <!-- Content Item Form -->
-                <div id="content-form-container" class="bg-white p-6 rounded-lg shadow-md">
+                <div id="content-form-container" class="bg-white p-6 rounded-lg shadow-md" th:style="${userRole == 'STUDENT'} ? 'display: none;' : ''">
                     <h3 id="content-form-title" class="text-xl font-semibold mb-4 text-gray-700">Add Content Item</h3>
                     <form id="content-form" class="space-y-4">
                         <input type="hidden" id="content-id" name="contentId">
@@ -175,8 +188,27 @@
     </div>
 
     <!-- JavaScript -->
-    <script>
+    <script th:inline="javascript">
+        // Logout function
+        function logout() {
+            fetch('/auth/logout', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/login';
+                }
+            })
+            .catch(error => {
+                console.error('Logout error:', error);
+                window.location.href = '/login';
+            });
+        }
+
         const userRole = /*[[${userRole}]]*/ '';
+        console.log('UserRole in course-modules:', userRole);
         let currentCourseId = null;
         let allModules = [];
         let allContentItems = [];
@@ -273,6 +305,7 @@
                                     class="text-blue-600 hover:text-blue-800 font-medium">
                                 View Content
                             </button>
+                            ${userRole !== 'STUDENT' ? `
                             <button onclick="editModule(${module.moduleId})" 
                                     class="text-indigo-600 hover:text-indigo-800">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -285,6 +318,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -369,6 +403,7 @@
                             <p class="text-sm text-blue-600 truncate">${item.uri}</p>
                         </div>
                         <div class="flex space-x-2">
+                            ${userRole !== 'STUDENT' ? `
                             <button onclick="editContentItem(${item.contentId})" 
                                     class="text-indigo-600 hover:text-indigo-800">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -381,6 +416,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                 </svg>
                             </button>
+                            ` : ''}
                         </div>
                     </div>
                 </div>

@@ -43,9 +43,11 @@ public class WebViewController {
     public String index(HttpSession session, Model model) {
         if (sessionManager.isUserAuthenticated(session)) {
             LoginResponse.UserInfo userInfo = sessionManager.getCurrentUserInfo(session);
+            Integer userId = sessionManager.getCurrentUserId(session);
             model.addAttribute("loggedIn", true);
             model.addAttribute("userName", userInfo.getName());
             model.addAttribute("userRole", getPrimaryRole(userInfo.getRoles()));
+            model.addAttribute("userId", userId);
         } else {
             model.addAttribute("loggedIn", false);
         }
@@ -64,8 +66,10 @@ public class WebViewController {
         }
         
         LoginResponse.UserInfo userInfo = sessionManager.getCurrentUserInfo(session);
+        Integer userId = sessionManager.getCurrentUserId(session);
         model.addAttribute("userName", userInfo.getName());
         model.addAttribute("userRole", getPrimaryRole(userInfo.getRoles()));
+        model.addAttribute("userId", userId);
         return "courses";
     }
 
